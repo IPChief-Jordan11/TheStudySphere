@@ -12,3 +12,45 @@ model Ping {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
 }
+
+model Student {
+  id          String   @id @default(uuid())
+  authUserId  String   @unique
+  email       String   @unique
+  institution String?
+  faculty     String?
+  createdAt   DateTime @default(now())
+
+  modules     Module[]
+}
+
+model Module {
+  id         String   @id @default(uuid())
+  name       String
+  studentId  String
+  student    Student  @relation(fields: [studentId], references: [id])
+  createdAt  DateTime @default(now())
+
+  documents  UploadedDocument[]
+}
+
+model UploadedDocument {
+  id            String   @id @default(uuid())
+  fileName      String
+  fileUrl       String
+  extractedText String?
+  moduleId      String
+  module        Module   @relation(fields: [moduleId], references: [id])
+  createdAt     DateTime @default(now())
+
+  generatedContent GeneratedContent[]
+}
+
+model GeneratedContent {
+  id         String   @id @default(uuid())
+  type       String
+  content    String
+  documentId String
+  document   UploadedDocument @relation(fields: [documentId], references: [id])
+  createdAt  DateTime @default(now())
+}
