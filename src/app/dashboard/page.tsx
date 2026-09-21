@@ -32,7 +32,7 @@ export default async function DashboardPage() {
         <div className="mt-6">
           <Link
             href="/upload"
-            className="inline-block rounded-full bg-[#E8A33D] px-5 py-2 text-sm font-medium text-[#12161C] transition-opacity hover:opacity-90"
+            className="inline-block rounded-full bg-[#5B9DF5] px-5 py-2 text-sm font-medium text-[#12161C] transition-opacity hover:opacity-90"
           >
             Upload a document
           </Link>

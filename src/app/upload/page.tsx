@@ -58,7 +58,7 @@ export default async function UploadPage({
             <label className="mb-1.5 block text-xs text-[#8B93A0]">Module</label>
             <select
               name="moduleId"
-              className="w-full rounded-lg border border-[#2D3540] bg-[#12161C] px-3 py-2 text-sm text-[#ECE6D6] outline-none transition-colors focus:border-[#E8A33D]"
+              className="w-full rounded-lg border border-[#2D3540] bg-[#12161C] px-3 py-2 text-sm text-[#ECE6D6] outline-none transition-colors focus:border-[#5B9DF5]"
               required
             >
               {student.modules.map((m) => (
@@ -73,7 +73,7 @@ export default async function UploadPage({
               type="file"
               name="file"
               accept="image/*,.pdf"
-              className="w-full rounded-lg border border-[#2D3540] bg-[#12161C] px-3 py-2 text-sm text-[#ECE6D6] outline-none file:mr-3 file:rounded-full file:border-0 file:bg-[#E8A33D] file:px-3 file:py-1 file:text-xs file:font-medium file:text-[#12161C]"
+              className="w-full rounded-lg border border-[#2D3540] bg-[#12161C] px-3 py-2 text-sm text-[#ECE6D6] outline-none file:mr-3 file:rounded-full file:border-0 file:bg-[#5B9DF5] file:px-3 file:py-1 file:text-xs file:font-medium file:text-[#12161C]"
               required
             />
             <p className="mt-1.5 text-xs text-[#8B93A0]">PDF or image, up to 4 MB.</p>

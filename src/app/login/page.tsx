@@ -44,7 +44,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-[#2D3540] bg-[#12161C] px-3 py-2 text-sm text-[#ECE6D6] outline-none transition-colors focus:border-[#E8A33D]"
+              className="w-full rounded-lg border border-[#2D3540] bg-[#12161C] px-3 py-2 text-sm text-[#ECE6D6] outline-none transition-colors focus:border-[#5B9DF5]"
               required
             />
           </div>
@@ -55,7 +55,7 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-[#2D3540] bg-[#12161C] px-3 py-2 text-sm text-[#ECE6D6] outline-none transition-colors focus:border-[#E8A33D]"
+              className="w-full rounded-lg border border-[#2D3540] bg-[#12161C] px-3 py-2 text-sm text-[#ECE6D6] outline-none transition-colors focus:border-[#5B9DF5]"
               required
             />
           </div>
@@ -64,7 +64,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full rounded-full bg-[#E8A33D] py-2.5 text-sm font-medium text-[#12161C] transition-opacity hover:opacity-90"
+            className="w-full rounded-full bg-[#5B9DF5] py-2.5 text-sm font-medium text-[#12161C] transition-opacity hover:opacity-90"
           >
             Log in
           </button>

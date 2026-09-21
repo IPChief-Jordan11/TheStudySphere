@@ -24,7 +24,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 href={item.href}
                 className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
                   active
-                    ? 'bg-[#1A2029] text-[#E8A33D]'
+                    ? 'bg-[#1A2029] text-[#5B9DF5]'
                     : 'text-[#8B93A0] hover:bg-[#1A2029] hover:text-[#ECE6D6]'
                 }`}
               >

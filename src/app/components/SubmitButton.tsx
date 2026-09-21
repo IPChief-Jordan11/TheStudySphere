@@ -18,7 +18,7 @@ export default function SubmitButton({
     <button
       type="submit"
       disabled={pending}
-      className={`rounded-full bg-[#E8A33D] text-sm font-medium text-[#12161C] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
+      className={`rounded-full bg-[#5B9DF5] text-sm font-medium text-[#12161C] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
     >
       {pending ? pendingText : idleText}
     </button>

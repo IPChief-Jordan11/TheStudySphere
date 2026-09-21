@@ -4,7 +4,7 @@ import { completeOnboarding } from './actions'
 import SubmitButton from '../components/SubmitButton'
 
 const inputClass =
-  'w-full rounded-lg border border-[#2D3540] bg-[#12161C] px-3 py-2 text-sm text-[#ECE6D6] outline-none transition-colors focus:border-[#E8A33D]'
+  'w-full rounded-lg border border-[#2D3540] bg-[#12161C] px-3 py-2 text-sm text-[#ECE6D6] outline-none transition-colors focus:border-[#5B9DF5]'
 const labelClass = 'mb-1.5 block text-xs text-[#8B93A0]'
 
 export default async function OnboardingPage({
