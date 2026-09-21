@@ -3,12 +3,13 @@ import { PrismaClient } from '@prisma/client'
 import { createClient } from '@/lib/supabase/server'
 import { generateStudyMaterials } from './actions'
 import AppShell from '../../components/AppShell'
+import SubmitButton from '../../components/SubmitButton'
 
 const prisma = new PrismaClient()
 
 // Generating study materials can take a while; give the Server Action more time on Vercel
 // (the allowed maximum depends on your plan).
-export const maxDuration = 60
+export const maxDuration = 300
 
 type Flashcard = { question: string; answer: string }
 type QuizQuestion = { question: string; options: string[]; correctIndex: number }
@@ -81,12 +82,11 @@ export default async function DocumentPage({
 
         {!summary && (
           <form action={handleGenerate} className="mt-4">
-            <button
-              type="submit"
-              className="rounded-full bg-[#E8A33D] px-5 py-2 text-sm font-medium text-[#12161C] transition-opacity hover:opacity-90"
-            >
-              Generate study materials
-            </button>
+            <SubmitButton
+              idleText="Generate study materials"
+              pendingText="Generating… this can take a minute"
+              className="px-5 py-2"
+            />
           </form>
         )}
 
