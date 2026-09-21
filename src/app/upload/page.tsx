@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { PrismaClient } from '@prisma/client'
 import { uploadDocument } from './actions'
 import AppShell from '../components/AppShell'
+import SubmitButton from '../components/SubmitButton'
 
 const prisma = new PrismaClient()
 
@@ -78,12 +79,11 @@ export default async function UploadPage({
             <p className="mt-1.5 text-xs text-[#8B93A0]">PDF or image, up to 4 MB.</p>
           </div>
 
-          <button
-            type="submit"
-            className="w-full rounded-full bg-[#E8A33D] py-2.5 text-sm font-medium text-[#12161C] transition-opacity hover:opacity-90"
-          >
-            Upload
-          </button>
+          <SubmitButton
+            idleText="Upload"
+            pendingText="Reading your document… this can take a minute"
+            className="w-full py-2.5"
+          />
         </form>
       </div>
     </AppShell>
