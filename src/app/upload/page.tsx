@@ -8,7 +8,7 @@ import SubmitButton from '../components/SubmitButton'
 const prisma = new PrismaClient()
 
 // Gives the upload + OCR Server Action more time on Vercel (limit depends on your plan).
-export const maxDuration = 60
+export const maxDuration = 300
 
 export default async function UploadPage({
   searchParams,
