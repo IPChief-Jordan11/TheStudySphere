@@ -11,35 +11,11 @@ const prisma = new PrismaClient()
 const MAX_FILE_BYTES = 4 * 1024 * 1024
 const OCR_TIMEOUT_MS = 60_000
 const PAGES_PER_CHUNK = 3
-// OCR.space's free tier limits requests per minute, so chunks run in small
-// batches instead of all at once.
-const OCR_CONCURRENCY = 3
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 
 // Errors whose message is safe and useful to show to the student.
 class UserFacingError extends Error {}
-
-// Runs `worker` over `items` with at most `limit` running at the same time,
-// and returns results in the same order as `items`.
-async function runWithConcurrency<T, R>(
-  items: T[],
-  limit: number,
-  worker: (item: T, index: number) => Promise<R>
-): Promise<R[]> {
-  const results: R[] = new Array(items.length)
-  let nextIndex = 0
-
-  async function runNext(): Promise<void> {
-    const index = nextIndex++
-    if (index >= items.length) return
-    results[index] = await worker(items[index], index)
-    await runNext()
-  }
-
-  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, runNext))
-  return results
-}
 
 async function ocrBase64(base64: string, mime: string): Promise<string> {
   const params = new URLSearchParams({
@@ -160,12 +136,10 @@ async function handleUpload(
       }
 
       const totalPages = sourcePdf.getPageCount()
-      const chunkRanges: Array<{ start: number; end: number }> = []
-      for (let start = 0; start < totalPages; start += PAGES_PER_CHUNK) {
-        chunkRanges.push({ start, end: Math.min(start + PAGES_PER_CHUNK, totalPages) })
-      }
+      const chunkTexts: string[] = []
 
-      const chunkTexts = await runWithConcurrency(chunkRanges, OCR_CONCURRENCY, async ({ start, end }) => {
+      for (let start = 0; start < totalPages; start += PAGES_PER_CHUNK) {
+        const end = Math.min(start + PAGES_PER_CHUNK, totalPages)
         const chunkDoc = await PDFDocument.create()
         const pageIndices = Array.from({ length: end - start }, (_, i) => start + i)
         const copiedPages = await chunkDoc.copyPages(sourcePdf, pageIndices)
@@ -180,12 +154,14 @@ async function handleUpload(
           `OCR pages ${start + 1}-${end} of ${totalPages} took ${Date.now() - started}ms`
         )
 
-        return `--- Pages ${start + 1}-${end} ---\n\n${
-          chunkText || '(No text could be extracted from this section)'
-        }`
-      })
+        realChars += chunkText.length
+        chunkTexts.push(
+          `--- Pages ${start + 1}-${end} ---\n\n${
+            chunkText || '(No text could be extracted from this section)'
+          }`
+        )
+      }
 
-      realChars = chunkTexts.reduce((sum, t) => sum + t.length, 0)
       extractedText = chunkTexts.join('\n\n')
     } else {
       const mime = file.type || 'image/jpeg'
