@@ -24,3 +24,16 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.prose-tutor p { margin: 0 0 0.6em; }
+.prose-tutor p:last-child { margin-bottom: 0; }
+.prose-tutor ul, .prose-tutor ol { margin: 0 0 0.6em 1.1em; }
+.prose-tutor li { margin: 0.15em 0; }
+.prose-tutor strong { color: #ECE6D6; font-weight: 600; }
+.prose-tutor code {
+  background: #12161C;
+  border: 1px solid #2D3540;
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  font-size: 0.85em;
+}

@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
+import Link from 'next/link'
 import { PrismaClient } from '@prisma/client'
 import { createClient } from '@/lib/supabase/server'
 import { generateStudyMaterials } from './actions'
@@ -73,6 +74,13 @@ export default async function DocumentPage({
     <AppShell>
       <div className="mx-auto max-w-2xl">
         <h1 className="font-serif text-2xl [overflow-wrap:anywhere]">{document.fileName}</h1>
+
+        <Link
+          href={`/documents/${id}/chat`}
+          className="mt-4 inline-block rounded-full border border-[#5B9DF5] px-5 py-2 text-sm font-medium text-[#5B9DF5] transition-colors hover:bg-[#5B9DF5]/10"
+        >
+          Ask the AI tutor
+        </Link>
 
         {error && (
           <p className="mt-4 rounded-lg border border-[#E86D5F] bg-[#E86D5F]/10 px-3 py-2 text-sm text-[#E86D5F]">
