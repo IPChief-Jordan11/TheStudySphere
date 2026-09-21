@@ -72,7 +72,7 @@ export default async function DocumentPage({
   return (
     <AppShell>
       <div className="mx-auto max-w-2xl">
-        <h1 className="font-serif text-2xl">{document.fileName}</h1>
+        <h1 className="font-serif text-2xl [overflow-wrap:anywhere]">{document.fileName}</h1>
 
         {error && (
           <p className="mt-4 rounded-lg border border-[#E86D5F] bg-[#E86D5F]/10 px-3 py-2 text-sm text-[#E86D5F]">

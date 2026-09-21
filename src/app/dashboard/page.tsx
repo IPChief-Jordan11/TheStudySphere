@@ -44,7 +44,7 @@ export default async function DashboardPage() {
               key={mod.id}
               className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-5"
             >
-              <h2 className="font-serif text-lg">{mod.name}</h2>
+              <h2 className="font-serif text-lg [overflow-wrap:anywhere]">{mod.name}</h2>
               {mod.documents.length === 0 ? (
                 <p className="mt-2 text-sm text-[#8B93A0]">No documents uploaded yet.</p>
               ) : (
@@ -53,7 +53,7 @@ export default async function DashboardPage() {
                     <li key={doc.id}>
                       <Link
                         href={`/documents/${doc.id}`}
-                        className="text-sm text-[#5FB3A3] hover:underline"
+                        className="text-sm text-[#5FB3A3] [overflow-wrap:anywhere] hover:underline"
                       >
                         {doc.fileName}
                       </Link>
