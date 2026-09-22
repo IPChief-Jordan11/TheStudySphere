@@ -27,6 +27,38 @@ NOTES:
 ${notes}`
 }
 
+// Confirms the document exists and belongs to this user. Returns the document, or null.
+async function getOwnedDocument(documentId: string, authUserId: string) {
+  const student = await prisma.student.findUnique({
+    where: { authUserId },
+    include: { modules: { select: { id: true } } },
+  })
+  const document = await prisma.uploadedDocument.findUnique({
+    where: { id: documentId },
+  })
+  if (!document || !student?.modules.some((m) => m.id === document.moduleId)) {
+    return null
+  }
+  return document
+}
+
+// Loads this document's saved chat history, oldest first.
+export async function loadChatHistory(documentId: string): Promise<ChatMessage[] | { error: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Please log in again.' }
+
+  const document = await getOwnedDocument(documentId, user.id)
+  if (!document) return { error: 'That document could not be found.' }
+
+  const rows = await prisma.chatMessage.findMany({
+    where: { documentId },
+    orderBy: { createdAt: 'asc' },
+  })
+
+  return rows.map((r) => ({ role: r.role as 'user' | 'assistant', content: r.content }))
+}
+
 export async function askTutor(
   documentId: string,
   history: ChatMessage[],
@@ -40,18 +72,8 @@ export async function askTutor(
     const cleanQuestion = String(question ?? '').trim().slice(0, MAX_MESSAGE_CHARS)
     if (!cleanQuestion) return { error: 'Please type a question.' }
 
-    const student = await prisma.student.findUnique({
-      where: { authUserId: user.id },
-      include: { modules: { select: { id: true } } },
-    })
-    const document = await prisma.uploadedDocument.findUnique({
-      where: { id: documentId },
-    })
-
-    // The document must exist AND belong to one of this user's modules.
-    if (!document || !student?.modules.some((m) => m.id === document.moduleId)) {
-      return { error: 'That document could not be found.' }
-    }
+    const document = await getOwnedDocument(documentId, user.id)
+    if (!document) return { error: 'That document could not be found.' }
     if (!document.extractedText || document.extractedText.trim().length < 20) {
       return { error: 'This document has no readable text to study from.' }
     }
@@ -82,6 +104,15 @@ export async function askTutor(
 
     const reply = completion.choices[0]?.message?.content?.trim()
     if (!reply) return { error: 'The tutor did not send an answer. Please try again.' }
+
+    // Save both sides of the exchange so the conversation survives a reload.
+    await prisma.chatMessage.createMany({
+      data: [
+        { documentId, role: 'user', content: cleanQuestion },
+        { documentId, role: 'assistant', content: reply },
+      ],
+    })
+
     return { reply }
   } catch (err) {
     console.error('Tutor chat failed:', err)

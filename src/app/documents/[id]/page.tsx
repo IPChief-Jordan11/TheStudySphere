@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client'
 import { createClient } from '@/lib/supabase/server'
 import { generateStudyMaterials } from './actions'
 import AppShell from '../../components/AppShell'
+import QuizClient from './QuizClient'
 import SubmitButton from '../../components/SubmitButton'
 
 const prisma = new PrismaClient()
@@ -122,35 +123,7 @@ export default async function DocumentPage({
           </div>
         )}
 
-        {quiz && (
-          <div className="mt-6">
-            <h2 className="font-serif text-lg">Quiz</h2>
-            <div className="mt-3 space-y-3">
-              {quiz.map((q, i) => (
-                <div
-                  key={i}
-                  className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-4"
-                >
-                  <p className="text-sm font-medium text-[#ECE6D6]">{q.question}</p>
-                  <ul className="mt-3 space-y-1.5">
-                    {q.options.map((opt, j) => (
-                      <li
-                        key={j}
-                        className={`rounded-lg px-3 py-1.5 text-sm ${
-                          j === q.correctIndex
-                            ? 'bg-[#5FB3A3]/15 text-[#5FB3A3]'
-                            : 'text-[#8B93A0]'
-                        }`}
-                      >
-                        {opt}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {quiz && <QuizClient documentId={id} quiz={quiz} />}
       </div>
     </AppShell>
   )

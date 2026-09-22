@@ -44,6 +44,8 @@ model UploadedDocument {
   createdAt     DateTime @default(now())
 
   generatedContent GeneratedContent[]
+  chatMessages     ChatMessage[]
+  quizAttempts     QuizAttempt[]
 }
 
 model GeneratedContent {
@@ -53,4 +55,22 @@ model GeneratedContent {
   documentId String
   document   UploadedDocument @relation(fields: [documentId], references: [id])
   createdAt  DateTime @default(now())
+}
+
+model ChatMessage {
+  id         String   @id @default(uuid())
+  role       String
+  content    String
+  documentId String
+  document   UploadedDocument @relation(fields: [documentId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+model QuizAttempt {
+  id          String   @id @default(uuid())
+  score       Int
+  total       Int
+  documentId  String
+  document    UploadedDocument @relation(fields: [documentId], references: [id])
+  createdAt   DateTime @default(now())
 }

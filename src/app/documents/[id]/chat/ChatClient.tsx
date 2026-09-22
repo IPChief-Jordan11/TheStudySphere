@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { askTutor } from './actions'
 import ReactMarkdown from 'react-markdown'
+import { askTutor, loadChatHistory } from './actions'
 
 type ChatMessage = { role: 'user' | 'assistant'; content: string }
 
@@ -14,10 +14,27 @@ const suggestions = [
 
 export default function ChatClient({ documentId }: { documentId: string }) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [historyLoaded, setHistoryLoaded] = useState(false)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    loadChatHistory(documentId).then((result) => {
+      if (cancelled) return
+      if (Array.isArray(result)) {
+        setMessages(result)
+      }
+      // A load error is quietly ignored — the student can still start a new
+      // conversation, and asking a question will surface a real error if one persists.
+      setHistoryLoaded(true)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [documentId])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -56,7 +73,7 @@ export default function ChatClient({ documentId }: { documentId: string }) {
   return (
     <div className="mt-6">
       <div className="space-y-3 rounded-2xl border border-[#2D3540] bg-[#1A2029] p-4">
-        {messages.length === 0 && (
+        {historyLoaded && messages.length === 0 && (
           <div>
             <p className="text-sm text-[#8B93A0]">Ask anything about this document. For example:</p>
             <div className="mt-3 flex flex-wrap gap-2">
