@@ -12,7 +12,7 @@ const MODEL = 'openai/gpt-oss-120b'
 
 // Groq's free tier limits how many tokens one request/minute can use, so very long
 // documents are cut off here. Raise this if your Groq limits allow more.
-const MAX_INPUT_CHARS = 24_000
+const MAX_INPUT_CHARS = 13_000
 
 // The prompt asks for 10 of each; accept a few fewer, but not a broken response.
 const MIN_ITEMS = 5

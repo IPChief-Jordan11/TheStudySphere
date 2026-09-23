@@ -1,22 +1,15 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { PrismaClient } from '@prisma/client'
-import { uploadDocument } from './actions'
 import AppShell from '../components/AppShell'
-import SubmitButton from '../components/SubmitButton'
+import UploadForm from './UploadForm'
 
 const prisma = new PrismaClient()
 
-// Gives the upload + OCR Server Action more time on Vercel (limit depends on your plan).
+// Gives the finalizeUpload Server Action (OCR) more time on Vercel.
 export const maxDuration = 300
 
-export default async function UploadPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>
-}) {
-  const { error } = await searchParams
-
+export default async function UploadPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -43,48 +36,7 @@ export default async function UploadPage({
     <AppShell>
       <div className="mx-auto max-w-sm">
         <h1 className="font-serif text-2xl">Upload a document</h1>
-
-        {error && (
-          <p className="mt-4 rounded-lg border border-[#E86D5F] bg-[#E86D5F]/10 px-3 py-2 text-sm text-[#E86D5F]">
-            {error}
-          </p>
-        )}
-
-        <form
-          action={uploadDocument}
-          className="mt-6 space-y-4 rounded-2xl border border-[#2D3540] bg-[#1A2029] p-6"
-        >
-          <div>
-            <label className="mb-1.5 block text-xs text-[#8B93A0]">Module</label>
-            <select
-              name="moduleId"
-              className="w-full rounded-lg border border-[#2D3540] bg-[#12161C] px-3 py-2 text-sm text-[#ECE6D6] outline-none transition-colors focus:border-[#5B9DF5]"
-              required
-            >
-              {student.modules.map((m) => (
-                <option key={m.id} value={m.id}>{m.name}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="mb-1.5 block text-xs text-[#8B93A0]">File</label>
-            <input
-              type="file"
-              name="file"
-              accept="image/*,.pdf"
-              className="w-full rounded-lg border border-[#2D3540] bg-[#12161C] px-3 py-2 text-sm text-[#ECE6D6] outline-none file:mr-3 file:rounded-full file:border-0 file:bg-[#5B9DF5] file:px-3 file:py-1 file:text-xs file:font-medium file:text-[#12161C]"
-              required
-            />
-            <p className="mt-1.5 text-xs text-[#8B93A0]">PDF or image, up to 4 MB.</p>
-          </div>
-
-          <SubmitButton
-            idleText="Upload"
-            pendingText="Reading your document… this can take a minute"
-            className="w-full py-2.5"
-          />
-        </form>
+        <UploadForm modules={student.modules} userId={user.id} />
       </div>
     </AppShell>
   )

@@ -9,7 +9,7 @@ const prisma = new PrismaClient()
 const MODEL = 'openai/gpt-oss-120b'
 
 // Groq's free tier limits tokens per request/minute, so long notes are cut off.
-const MAX_NOTES_CHARS = 20_000
+const MAX_NOTES_CHARS = 13_000
 const MAX_HISTORY_MESSAGES = 10
 const MAX_MESSAGE_CHARS = 2_000
 

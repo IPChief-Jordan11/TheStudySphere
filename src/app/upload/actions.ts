@@ -2,13 +2,10 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { PrismaClient } from '@prisma/client'
-import { redirect } from 'next/navigation'
 import { PDFDocument } from 'pdf-lib'
 
 const prisma = new PrismaClient()
 
-// Vercel rejects request bodies over ~4.5 MB, so stay safely under that.
-const MAX_FILE_BYTES = 4 * 1024 * 1024
 const OCR_TIMEOUT_MS = 60_000
 const PAGES_PER_CHUNK = 3
 // OCR.space's free tier limits requests per minute, so chunks run in small
@@ -16,6 +13,7 @@ const PAGES_PER_CHUNK = 3
 const OCR_CONCURRENCY = 3
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
+type FinalizeResult = { error?: string }
 
 // Errors whose message is safe and useful to show to the student.
 class UserFacingError extends Error {}
@@ -96,55 +94,35 @@ async function ocrWithRetry(base64: string, mime: string): Promise<string> {
   }
 }
 
-async function handleUpload(
-  formData: FormData,
-  userId: string,
+function guessMime(fileName: string): { isPdf: boolean; mime: string } {
+  const ext = (fileName.split('.').pop() ?? '').toLowerCase()
+  if (ext === 'pdf') return { isPdf: true, mime: 'application/pdf' }
+  if (ext === 'png') return { isPdf: false, mime: 'image/png' }
+  if (ext === 'jpg' || ext === 'jpeg') return { isPdf: false, mime: 'image/jpeg' }
+  return { isPdf: false, mime: 'image/jpeg' }
+}
+
+async function processAndSave(
+  filePath: string,
+  fileName: string,
+  moduleId: string,
   supabase: SupabaseClient
-): Promise<{ error?: string }> {
-  const moduleId = formData.get('moduleId')
-  const file = formData.get('file')
-
-  if (typeof moduleId !== 'string' || !moduleId) {
-    return { error: 'Please choose a module.' }
-  }
-  if (!(file instanceof File) || file.size === 0) {
-    return { error: 'Please choose a file to upload.' }
-  }
-  if (file.size > MAX_FILE_BYTES) {
-    return { error: 'That file is over 4 MB. Please upload a smaller file for now.' }
-  }
-
-  // moduleId comes from the browser, so confirm it belongs to this user.
-  const owner = await prisma.student.findUnique({
-    where: { authUserId: userId },
-    select: { modules: { select: { id: true } } },
-  })
-  if (!owner?.modules.some((m) => m.id === moduleId)) {
-    return { error: 'That module could not be found.' }
-  }
-
-  const fileExt = (file.name.split('.').pop() ?? '').toLowerCase()
-  const isPdf = file.type === 'application/pdf' || fileExt === 'pdf'
-  const filePath = `${userId}/${Date.now()}.${fileExt}`
-
-  // 1. Upload the original file to Supabase Storage
-  const { error: uploadError } = await supabase.storage
+): Promise<FinalizeResult> {
+  const { data: fileBlob, error: downloadError } = await supabase.storage
     .from('documents')
-    .upload(filePath, file)
+    .download(filePath)
 
-  if (uploadError) {
-    console.error('Storage upload failed:', uploadError)
-    return { error: 'Could not save your file. Please try again.' }
+  if (downloadError || !fileBlob) {
+    console.error('Downloading uploaded file from Storage failed:', downloadError)
+    return { error: 'Could not read your uploaded file. Please try again.' }
   }
+
+  const { data: publicUrlData } = supabase.storage.from('documents').getPublicUrl(filePath)
+  const fileUrl = publicUrlData.publicUrl
+  const { isPdf } = guessMime(fileName)
 
   try {
-    const { data: publicUrlData } = supabase.storage
-      .from('documents')
-      .getPublicUrl(filePath)
-    const fileUrl = publicUrlData.publicUrl
-
-    // 2. Run OCR (PDFs are split into 3-page chunks, images are sent as one request)
-    const fileBuffer = await file.arrayBuffer()
+    const fileBuffer = await fileBlob.arrayBuffer()
     let extractedText: string
     let realChars = 0
 
@@ -188,7 +166,7 @@ async function handleUpload(
       realChars = chunkTexts.reduce((sum, t) => sum + t.length, 0)
       extractedText = chunkTexts.join('\n\n')
     } else {
-      const mime = file.type || 'image/jpeg'
+      const { mime } = guessMime(fileName)
       const text = await ocrWithRetry(Buffer.from(fileBuffer).toString('base64'), mime)
       realChars = text.length
       extractedText = text
@@ -200,10 +178,9 @@ async function handleUpload(
       )
     }
 
-    // 3. Save the document record in the database
     await prisma.uploadedDocument.create({
       data: {
-        fileName: file.name,
+        fileName,
         fileUrl,
         extractedText,
         moduleId,
@@ -224,22 +201,38 @@ async function handleUpload(
   }
 }
 
-export async function uploadDocument(formData: FormData) {
+// Called by the browser after it has already uploaded the file straight to
+// Supabase Storage. This action only needs the file's path, not its bytes,
+// so it never touches Vercel's request body size limit.
+export async function finalizeUpload(
+  moduleId: string,
+  filePath: string,
+  fileName: string
+): Promise<FinalizeResult> {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/login')
+    return { error: 'Please log in again.' }
+  }
+  if (!moduleId || !filePath || !fileName) {
+    return { error: 'Missing upload details. Please try again.' }
+  }
+  // The path the browser uploaded to must belong to this user, so nobody can
+  // ask the server to process a file from someone else's folder.
+  if (!filePath.startsWith(`${user.id}/`)) {
+    return { error: 'That upload could not be verified. Please try again.' }
   }
 
-  const result = await handleUpload(formData, user.id, supabase)
-
-  // redirect() works by throwing, so it must stay outside any try/catch.
-  if (result.error) {
-    redirect(`/upload?error=${encodeURIComponent(result.error)}`)
+  const owner = await prisma.student.findUnique({
+    where: { authUserId: user.id },
+    select: { modules: { select: { id: true } } },
+  })
+  if (!owner?.modules.some((m) => m.id === moduleId)) {
+    return { error: 'That module could not be found.' }
   }
 
-  redirect('/dashboard')
+  return processAndSave(filePath, fileName, moduleId, supabase)
 }
