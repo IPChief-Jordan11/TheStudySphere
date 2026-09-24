@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { PrismaClient } from '@prisma/client'
 import { createClient } from '@/lib/supabase/server'
 import { generateStudyMaterials } from './actions'
+import { generateExamPaper } from './exam-actions'
 import AppShell from '../../components/AppShell'
 import QuizClient from './QuizClient'
 
@@ -15,6 +16,8 @@ export const maxDuration = 300
 type Flashcard = { question: string; answer: string; topic?: string }
 type QuizQuestion = { question: string; options: string[]; correctIndex: number; topic?: string }
 type TopicSummary = { topicTitle: string; summary: string }
+type ExamQuestion = { number: number; text: string; marks: number }
+type ExamPaper = { title: string; questions: ExamQuestion[] }
 
 // A corrupted row should never crash the whole page.
 function safeParse<T>(raw: string | undefined): T | null {
@@ -103,10 +106,18 @@ export default async function DocumentPage({
 
   const flashcardGroups = flashcards ? groupByTopic(flashcards) : null
   const quizByTopic = quiz ? groupByTopic(quiz) : null
+  const exam = safeParse<ExamPaper>(
+    document.generatedContent.find((c) => c.type === 'exam')?.content
+  )
 
   async function handleGenerate() {
     'use server'
     await generateStudyMaterials(id)
+  }
+
+  async function handleGenerateExam() {
+    'use server'
+    await generateExamPaper(id)
   }
 
   return (
@@ -188,6 +199,44 @@ export default async function DocumentPage({
             )}
             <QuizClient documentId={id} quiz={quiz} />
           </>
+        )}
+
+        {document.kind !== 'past_paper' && (
+          <div className="mt-10 border-t border-[#2D3540] pt-6">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="font-serif text-lg">Exam-style practice paper</h2>
+              <form action={handleGenerateExam}>
+                <button
+                  type="submit"
+                  className="rounded-full border border-[#5B9DF5] px-4 py-1.5 text-xs font-medium text-[#5B9DF5] transition-colors hover:bg-[#5B9DF5]/10"
+                >
+                  {exam ? 'Regenerate' : 'Generate exam-style questions'}
+                </button>
+              </form>
+            </div>
+            <p className="mt-1 text-xs text-[#8B93A0]">
+              Uses a past paper you've uploaded for this module as a style guide, if one exists.
+            </p>
+
+            {exam && (
+              <div className="mt-4 rounded-xl border border-[#2D3540] bg-[#1A2029] p-5">
+                <h3 className="font-serif text-base">{exam.title}</h3>
+                <ol className="mt-4 space-y-4">
+                  {exam.questions.map((q) => (
+                    <li key={q.number} className="text-sm text-[#ECE6D6]">
+                      <div className="flex items-start justify-between gap-3">
+                        <span>
+                          <span className="text-[#8B93A0]">{q.number}. </span>
+                          {q.text}
+                        </span>
+                        <span className="shrink-0 text-xs text-[#8B93A0]">[{q.marks}]</span>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </AppShell>

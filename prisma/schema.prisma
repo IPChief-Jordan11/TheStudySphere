@@ -39,6 +39,7 @@ model UploadedDocument {
   fileName      String
   fileUrl       String
   extractedText String?
+  kind          String   @default("notes")
   moduleId      String
   module        Module   @relation(fields: [moduleId], references: [id])
   createdAt     DateTime @default(now())

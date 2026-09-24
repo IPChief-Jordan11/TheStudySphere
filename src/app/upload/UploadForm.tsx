@@ -23,6 +23,7 @@ export default function UploadForm({
   const router = useRouter()
   const [moduleId, setModuleId] = useState(initialModuleId ?? modules[0]?.id ?? '')
   const [file, setFile] = useState<File | null>(null)
+  const [isPastPaper, setIsPastPaper] = useState(false)
   const [status, setStatus] = useState<'idle' | 'uploading' | 'processing'>('idle')
   const [error, setError] = useState('')
 
@@ -63,7 +64,12 @@ export default function UploadForm({
 
     setStatus('processing')
     try {
-      const result = await finalizeUpload(moduleId, filePath, file.name)
+      const result = await finalizeUpload(
+        moduleId,
+        filePath,
+        file.name,
+        isPastPaper ? 'past_paper' : 'notes'
+      )
       if (result?.error) {
         setError(result.error)
         setStatus('idle')
@@ -108,6 +114,23 @@ export default function UploadForm({
         />
         <p className="mt-1.5 text-xs text-[#8B93A0]">PDF or image, up to 10 MB.</p>
       </div>
+
+      <label className="flex items-start gap-2 text-sm text-[#ECE6D6]">
+        <input
+          type="checkbox"
+          checked={isPastPaper}
+          onChange={(e) => setIsPastPaper(e.target.checked)}
+          disabled={busy}
+          className="mt-0.5 h-4 w-4 rounded border-[#2D3540] bg-[#12161C] accent-[#5B9DF5]"
+        />
+        <span>
+          This is a past exam paper for this module
+          <span className="block text-xs text-[#8B93A0]">
+            Used as a style guide when generating exam-style questions from your notes — not
+            included as study material itself.
+          </span>
+        </span>
+      </label>
 
       {error && (
         <p className="rounded-lg border border-[#E86D5F] bg-[#E86D5F]/10 px-3 py-2 text-sm text-[#E86D5F]">

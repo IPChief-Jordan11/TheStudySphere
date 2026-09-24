@@ -14,6 +14,7 @@ const OCR_CONCURRENCY = 3
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 type FinalizeResult = { error?: string }
+type DocumentKind = 'notes' | 'past_paper'
 
 // Errors whose message is safe and useful to show to the student.
 class UserFacingError extends Error {}
@@ -106,6 +107,7 @@ async function processAndSave(
   filePath: string,
   fileName: string,
   moduleId: string,
+  kind: DocumentKind,
   supabase: SupabaseClient
 ): Promise<FinalizeResult> {
   const { data: fileBlob, error: downloadError } = await supabase.storage
@@ -184,6 +186,7 @@ async function processAndSave(
         fileUrl,
         extractedText,
         moduleId,
+        kind,
       },
     })
 
@@ -207,7 +210,8 @@ async function processAndSave(
 export async function finalizeUpload(
   moduleId: string,
   filePath: string,
-  fileName: string
+  fileName: string,
+  kind: DocumentKind = 'notes'
 ): Promise<FinalizeResult> {
   const supabase = await createClient()
   const {
@@ -234,5 +238,5 @@ export async function finalizeUpload(
     return { error: 'That module could not be found.' }
   }
 
-  return processAndSave(filePath, fileName, moduleId, supabase)
+  return processAndSave(filePath, fileName, moduleId, kind, supabase)
 }
