@@ -11,9 +11,17 @@ const MAX_FILE_BYTES = 10 * 1024 * 1024
 
 type Module = { id: string; name: string }
 
-export default function UploadForm({ modules, userId }: { modules: Module[]; userId: string }) {
+export default function UploadForm({
+  modules,
+  userId,
+  initialModuleId,
+}: {
+  modules: Module[]
+  userId: string
+  initialModuleId?: string
+}) {
   const router = useRouter()
-  const [moduleId, setModuleId] = useState(modules[0]?.id ?? '')
+  const [moduleId, setModuleId] = useState(initialModuleId ?? modules[0]?.id ?? '')
   const [file, setFile] = useState<File | null>(null)
   const [status, setStatus] = useState<'idle' | 'uploading' | 'processing'>('idle')
   const [error, setError] = useState('')

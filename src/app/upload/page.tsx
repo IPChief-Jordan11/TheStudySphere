@@ -9,7 +9,13 @@ const prisma = new PrismaClient()
 // Gives the finalizeUpload Server Action (OCR) more time on Vercel.
 export const maxDuration = 300
 
-export default async function UploadPage() {
+export default async function UploadPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ moduleId?: string }>
+}) {
+  const { moduleId } = await searchParams
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -32,11 +38,16 @@ export default async function UploadPage() {
     )
   }
 
+  // Only trust the moduleId from the link if it's actually one of this student's modules.
+  const initialModuleId = student.modules.some((m) => m.id === moduleId)
+    ? moduleId
+    : student.modules[0]?.id
+
   return (
     <AppShell>
       <div className="mx-auto max-w-sm">
-        <h1 className="font-serif text-2xl">Upload a document</h1>
-        <UploadForm modules={student.modules} userId={user.id} />
+        <h1 className="font-serif text-2xl">Add a document</h1>
+        <UploadForm modules={student.modules} userId={user.id} initialModuleId={initialModuleId} />
       </div>
     </AppShell>
   )

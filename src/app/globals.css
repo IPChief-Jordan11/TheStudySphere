@@ -37,3 +37,15 @@ body {
   padding: 0.1em 0.35em;
   font-size: 0.85em;
 }
+
+/* Buttons grow slightly on hover and shrink slightly when pressed. */
+button:not(:disabled) {
+  transition-duration: 150ms;
+  transition-property: transform, opacity, background-color, border-color, color;
+}
+button:not(:disabled):hover {
+  transform: scale(1.03);
+}
+button:not(:disabled):active {
+  transform: scale(0.97);
+}
