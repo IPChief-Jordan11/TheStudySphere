@@ -60,12 +60,16 @@ export default async function OnboardingPage({
           </div>
 
           <div>
-            <label className={labelClass}>First module (optional)</label>
-            <input
-              name="moduleName"
-              placeholder="e.g. Calculus 101"
+            <label className={labelClass}>Your modules (optional)</label>
+            <textarea
+              name="moduleNames"
+              placeholder={'e.g.\nCalculus 101\nObject Oriented Programming\nThermodynamics'}
+              rows={4}
               className={inputClass}
             />
+            <p className="mt-1.5 text-xs text-[#8B93A0]">
+              One module per line. You can add more later from the dashboard.
+            </p>
           </div>
 
           <SubmitButton

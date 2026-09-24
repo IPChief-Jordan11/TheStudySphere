@@ -6,13 +6,15 @@ import { redirect } from 'next/navigation'
 
 const prisma = new PrismaClient()
 
+const MAX_MODULES_PER_SUBMIT = 20
+
 type ProfileInput = {
   authUserId: string
   email: string
   emailConfirmed: boolean
   institution: string
   faculty: string
-  moduleName: string
+  moduleNames: string[]
 }
 
 function isUniqueConstraintError(err: unknown): boolean {
@@ -42,17 +44,31 @@ async function upsertStudent(input: ProfileInput) {
   }
 }
 
+// Splits the textarea into clean, unique, non-empty module names, capped to a
+// sane number so one submission can't create hundreds of rows by accident.
+function parseModuleNames(raw: string): string[] {
+  const seen = new Set<string>()
+  const names: string[] = []
+
+  for (const line of raw.split('\n')) {
+    const name = line.trim()
+    if (!name || seen.has(name.toLowerCase())) continue
+    seen.add(name.toLowerCase())
+    names.push(name)
+    if (names.length >= MAX_MODULES_PER_SUBMIT) break
+  }
+
+  return names
+}
+
 // Returns an error message for the student, or null on success.
 async function saveOnboarding(input: ProfileInput): Promise<string | null> {
   try {
     const student = await upsertStudent(input)
 
-    if (input.moduleName) {
-      await prisma.module.create({
-        data: {
-          name: input.moduleName,
-          studentId: student.id,
-        },
+    if (input.moduleNames.length > 0) {
+      await prisma.module.createMany({
+        data: input.moduleNames.map((name) => ({ name, studentId: student.id })),
       })
     }
 
@@ -80,7 +96,7 @@ export async function completeOnboarding(formData: FormData) {
     emailConfirmed: Boolean(user.email_confirmed_at),
     institution: String(formData.get('institution') ?? '').trim(),
     faculty: String(formData.get('faculty') ?? '').trim(),
-    moduleName: String(formData.get('moduleName') ?? '').trim(),
+    moduleNames: parseModuleNames(String(formData.get('moduleNames') ?? '')),
   })
 
   // redirect() works by throwing, so it must stay outside any try/catch.
