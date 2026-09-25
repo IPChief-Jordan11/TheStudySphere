@@ -4,6 +4,8 @@ import { PrismaClient } from '@prisma/client'
 import AppShell from '../components/AppShell'
 import { updateWeeklyHours } from './actions'
 
+const DAY_ACCENTS = ['#5B9DF5', '#5FB3A3', '#9B8CFF', '#5B9DF5', '#5FB3A3']
+
 const prisma = new PrismaClient()
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const
@@ -140,9 +142,18 @@ export default async function StudyPlanPage() {
           </p>
         ) : (
           <div className="mt-6 space-y-4">
-            {byDay.map(({ day, sessions }) => (
-              <div key={day} className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-4">
-                <p className="text-xs font-medium uppercase tracking-wide text-[#5B9DF5]">{day}</p>
+            {byDay.map(({ day, sessions }, i) => (
+              <div
+                key={day}
+                className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-4 border-t-2"
+                style={{ borderTopColor: DAY_ACCENTS[i % DAY_ACCENTS.length] }}
+              >
+                <p
+                  className="text-xs font-medium uppercase tracking-wide"
+                  style={{ color: DAY_ACCENTS[i % DAY_ACCENTS.length] }}
+                >
+                  {day}
+                </p>
                 {sessions.length === 0 ? (
                   <p className="mt-2 text-sm text-[#8B93A0]">Free day — no sessions scheduled.</p>
                 ) : (

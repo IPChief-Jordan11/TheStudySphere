@@ -38,14 +38,38 @@ body {
   font-size: 0.85em;
 }
 
-/* Buttons grow slightly on hover and shrink slightly when pressed. */
+/* Bubbly, springy button feedback: a slight overshoot on hover, a quick
+   squash on click, using a "back" easing curve instead of a flat linear one. */
 button:not(:disabled) {
-  transition-duration: 150ms;
-  transition-property: transform, opacity, background-color, border-color, color;
+  transition-duration: 220ms;
+  transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-property: transform, opacity, background-color, border-color, color, filter;
 }
 button:not(:disabled):hover {
-  transform: scale(1.03);
+  transform: scale(1.06);
+  filter: drop-shadow(0 0 8px rgba(91, 157, 245, 0.5));
 }
 button:not(:disabled):active {
-  transform: scale(0.97);
+  transform: scale(0.94);
+  transition-duration: 100ms;
+  filter: drop-shadow(0 0 2px rgba(91, 157, 245, 0.3));
+}
+
+/* Accessibility settings, toggled from /accessibility and applied via data
+   attributes on <html>. See src/app/accessibility/page.tsx. */
+html[data-a11y-large-text="true"] {
+  font-size: 120%;
+}
+
+html[data-a11y-spacing="true"] body {
+  letter-spacing: 0.03em;
+  word-spacing: 0.12em;
+  line-height: 1.7;
+}
+
+/* An honest limitation: this app's colors are hardcoded per-component rather
+   than theme variables, so a true "pure black on white" swap isn't possible
+   with CSS alone yet. This boosts contrast instead of changing the palette. */
+html[data-a11y-contrast="true"] body {
+  filter: contrast(1.35) brightness(1.05);
 }

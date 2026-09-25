@@ -7,9 +7,30 @@ import ScoreRing from '../components/ScoreRing'
 
 const prisma = new PrismaClient()
 
-function StatCard({ label, value, unit }: { label: string; value: string; unit?: string }) {
+// A small rotating accent palette, used purely for visual variety on cards
+// that don't already carry a score-based color (blue/teal/violet all read
+// well against the dark background).
+const ACCENT_PALETTE = ['#5B9DF5', '#5FB3A3', '#9B8CFF']
+function accentFor(index: number): string {
+  return ACCENT_PALETTE[index % ACCENT_PALETTE.length]
+}
+
+function StatCard({
+  label,
+  value,
+  unit,
+  accent,
+}: {
+  label: string
+  value: string
+  unit?: string
+  accent: string
+}) {
   return (
-    <div className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-4">
+    <div
+      className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-4 border-t-2"
+      style={{ borderTopColor: accent }}
+    >
       <p className="text-xs text-[#8B93A0]">{label}</p>
       <p className="mt-1 font-serif text-2xl text-[#ECE6D6]">
         {value}
@@ -75,13 +96,14 @@ export default async function DashboardPage() {
         </p>
 
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard label="Modules" value={String(modules.length)} />
-          <StatCard label="Documents" value={String(allDocuments.length)} />
-          <StatCard label="Quizzes completed" value={String(allAttempts.length)} />
+          <StatCard label="Modules" value={String(modules.length)} accent={accentFor(0)} />
+          <StatCard label="Documents" value={String(allDocuments.length)} accent={accentFor(1)} />
+          <StatCard label="Quizzes completed" value={String(allAttempts.length)} accent={accentFor(2)} />
           <StatCard
             label="Avg quiz score"
             value={avgScorePercent !== null ? String(avgScorePercent) : '—'}
             unit={avgScorePercent !== null ? '%' : undefined}
+            accent={accentFor(0)}
           />
         </div>
 
@@ -97,8 +119,12 @@ export default async function DashboardPage() {
           </p>
         ) : (
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {moduleStats.map((mod) => (
-              <div key={mod.id} className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-5">
+            {moduleStats.map((mod, i) => (
+              <div
+                key={mod.id}
+                className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-5 border-l-2 transition-transform hover:scale-[1.01]"
+                style={{ borderLeftColor: accentFor(i) }}
+              >
                 <div className="flex items-start gap-4">
                   {mod.quizAvg !== null ? (
                     <ScoreRing percent={mod.quizAvg} size={56} />
