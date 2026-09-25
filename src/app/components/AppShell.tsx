@@ -7,6 +7,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/upload', label: 'Upload' },
   { href: '/progress', label: 'Progress' },
+  { href: '/study-plan', label: 'Study Plan' },
 ]
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
