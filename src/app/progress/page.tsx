@@ -3,79 +3,9 @@ import Link from 'next/link'
 import { PrismaClient } from '@prisma/client'
 import { createClient } from '@/lib/supabase/server'
 import AppShell from '../components/AppShell'
+import ScoreRing, { scoreLabel } from '../components/ScoreRing'
 
 const prisma = new PrismaClient()
-
-const RING_SIZE = 128
-const RING_STROKE = 12
-const RING_RADIUS = (RING_SIZE - RING_STROKE) / 2
-const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS
-
-function scoreColor(percent: number): string {
-  if (percent >= 80) return '#5FB3A3'
-  if (percent >= 50) return '#5B9DF5'
-  return '#E86D5F'
-}
-
-function scoreLabel(percent: number): string {
-  if (percent >= 90) return "You're on fire! \ud83d\udd25"
-  if (percent >= 80) return 'Great work! \u2728'
-  if (percent >= 50) return 'Solid progress \ud83d\udcaa'
-  return 'Keep practicing \ud83c\udf31'
-}
-
-function ProgressRing({ percent }: { percent: number }) {
-  const clamped = Math.max(0, Math.min(100, percent))
-  const offset = RING_CIRCUMFERENCE * (1 - clamped / 100)
-  const color = scoreColor(clamped)
-
-  return (
-    <div className="relative inline-flex items-center justify-center">
-      <svg width={RING_SIZE} height={RING_SIZE} className="-rotate-90">
-        <circle
-          cx={RING_SIZE / 2}
-          cy={RING_SIZE / 2}
-          r={RING_RADIUS}
-          fill="none"
-          stroke="#2D3540"
-          strokeWidth={RING_STROKE}
-        />
-        <circle
-          cx={RING_SIZE / 2}
-          cy={RING_SIZE / 2}
-          r={RING_RADIUS}
-          fill="none"
-          stroke={color}
-          strokeWidth={RING_STROKE}
-          strokeLinecap="round"
-          strokeDasharray={RING_CIRCUMFERENCE}
-          strokeDashoffset={offset}
-          style={{ transition: 'stroke-dashoffset 800ms ease-out' }}
-        />
-      </svg>
-      <div className="absolute flex flex-col items-center">
-        <span className="font-serif text-3xl text-[#ECE6D6]">{clamped}%</span>
-        <span className="text-[10px] uppercase tracking-wide text-[#8B93A0]">overall</span>
-      </div>
-    </div>
-  )
-}
-
-function ProgressBar({ percent }: { percent: number }) {
-  const clamped = Math.max(0, Math.min(100, percent))
-  return (
-    <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[#12161C]">
-      <div
-        className="h-full rounded-full"
-        style={{
-          width: `${clamped}%`,
-          backgroundColor: scoreColor(clamped),
-          transition: 'width 600ms ease-out',
-        }}
-      />
-    </div>
-  )
-}
 
 export default async function ProgressPage() {
   const supabase = await createClient()
@@ -100,10 +30,11 @@ export default async function ProgressPage() {
     },
   })
 
-  const documentsWithAttempts =
-    student?.modules
-      .flatMap((mod) => mod.documents.map((doc) => ({ ...doc, moduleName: mod.name })))
-      .filter((doc) => doc.quizAttempts.length > 0) ?? []
+  const modules = student?.modules ?? []
+
+  const documentsWithAttempts = modules
+    .flatMap((mod) => mod.documents.map((doc) => ({ ...doc, moduleName: mod.name })))
+    .filter((doc) => doc.quizAttempts.length > 0)
 
   const allAttempts = documentsWithAttempts.flatMap((doc) =>
     doc.quizAttempts.map((a) => ({ ...a, fileName: doc.fileName, documentId: doc.id }))
@@ -113,9 +44,28 @@ export default async function ProgressPage() {
   const totalPossible = allAttempts.reduce((sum, a) => sum + a.total, 0)
   const overallPercent = totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : null
 
+  // One quiz average per module, combining every quiz taken across all of that
+  // module's documents — this is a real, computed number, not an estimate of
+  // how much of the syllabus has been "covered".
+  const moduleAverages = modules
+    .map((mod) => {
+      const attempts = mod.documents.flatMap((d) => d.quizAttempts)
+      const score = attempts.reduce((sum, a) => sum + a.score, 0)
+      const possible = attempts.reduce((sum, a) => sum + a.total, 0)
+      const percent = possible > 0 ? Math.round((score / possible) * 100) : null
+      return { id: mod.id, name: mod.name, percent, attemptCount: attempts.length }
+    })
+    .filter((m) => m.percent !== null) as { id: string; name: string; percent: number; attemptCount: number }[]
+
+  const weakest =
+    moduleAverages.length >= 2
+      ? [...moduleAverages].sort((a, b) => a.percent - b.percent)[0]
+      : null
+  const gapFromAverage = weakest && overallPercent !== null ? overallPercent - weakest.percent : 0
+
   return (
     <AppShell>
-      <div className="mx-auto max-w-2xl">
+      <div className="mx-auto max-w-3xl">
         <h1 className="font-serif text-2xl">Your progress</h1>
 
         {allAttempts.length === 0 ? (
@@ -126,7 +76,9 @@ export default async function ProgressPage() {
         ) : (
           <>
             <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl border border-[#2D3540] bg-[#1A2029] p-6 text-center sm:flex-row sm:justify-center sm:gap-8 sm:text-left">
-              {overallPercent !== null && <ProgressRing percent={overallPercent} />}
+              {overallPercent !== null && (
+                <ScoreRing percent={overallPercent} size={128} strokeWidth={12} />
+              )}
               <div>
                 <p className="text-sm font-medium text-[#ECE6D6]">
                   {overallPercent !== null && scoreLabel(overallPercent)}
@@ -139,50 +91,75 @@ export default async function ProgressPage() {
               </div>
             </div>
 
-            <div className="mt-6 space-y-4">
+            {moduleAverages.length > 0 && (
+              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-5">
+                  <h2 className="font-serif text-base text-[#ECE6D6]">Quiz average by module</h2>
+                  <div className="mt-4 space-y-3">
+                    {moduleAverages.map((mod) => (
+                      <div key={mod.id} className="flex items-center gap-3">
+                        <ScoreRing percent={mod.percent} size={44} />
+                        <span className="text-sm text-[#ECE6D6]">{mod.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-5">
+                  <h2 className="font-serif text-base text-[#ECE6D6]">Gap identified</h2>
+                  {weakest ? (
+                    <p className="mt-3 text-sm text-[#8B93A0]">
+                      <span className="text-[#ECE6D6]">{weakest.name}</span> is your lowest-scoring
+                      module at {weakest.percent}%, {Math.abs(gapFromAverage)} points{' '}
+                      {gapFromAverage >= 0 ? 'below' : 'above'} your overall average of{' '}
+                      {overallPercent}%. Based on {weakest.attemptCount}{' '}
+                      {weakest.attemptCount === 1 ? 'quiz' : 'quizzes'} in that module.
+                    </p>
+                  ) : (
+                    <p className="mt-3 text-sm text-[#8B93A0]">
+                      Take a quiz in at least two modules to see how they compare.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <h2 className="mt-8 font-serif text-lg text-[#ECE6D6]">By document</h2>
+            <div className="mt-4 space-y-4">
               {documentsWithAttempts.map((doc) => {
                 const best = doc.quizAttempts.reduce(
                   (max, a) => Math.max(max, a.total > 0 ? (a.score / a.total) * 100 : 0),
                   0
                 )
-                const bestRounded = Math.round(best)
                 return (
                   <div key={doc.id} className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-5">
-                    <div className="flex items-center justify-between gap-4">
-                      <Link
-                        href={`/documents/${doc.id}`}
-                        className="text-sm font-medium text-[#ECE6D6] [overflow-wrap:anywhere] hover:text-[#5B9DF5]"
-                      >
-                        {doc.fileName}
-                      </Link>
-                      <span className="shrink-0 text-xs text-[#8B93A0]">{doc.moduleName}</span>
-                    </div>
-
-                    <div className="mt-3 flex items-center gap-3">
-                      <div className="flex-1">
-                        <ProgressBar percent={bestRounded} />
+                    <div className="flex items-center gap-4">
+                      <ScoreRing percent={best} size={48} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-4">
+                          <Link
+                            href={`/documents/${doc.id}`}
+                            className="text-sm font-medium text-[#ECE6D6] [overflow-wrap:anywhere] hover:text-[#5B9DF5]"
+                          >
+                            {doc.fileName}
+                          </Link>
+                          <span className="shrink-0 text-xs text-[#8B93A0]">{doc.moduleName}</span>
+                        </div>
+                        <ul className="mt-2 space-y-1">
+                          {doc.quizAttempts.map((a) => (
+                            <li key={a.id} className="text-xs text-[#8B93A0]">
+                              {a.score}/{a.total} —{' '}
+                              {new Date(a.createdAt).toLocaleDateString(undefined, {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: '2-digit',
+                              })}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                      <span
-                        className="w-12 shrink-0 text-right text-sm font-semibold"
-                        style={{ color: scoreColor(bestRounded) }}
-                      >
-                        {bestRounded}%
-                      </span>
                     </div>
-
-                    <ul className="mt-3 space-y-1">
-                      {doc.quizAttempts.map((a) => (
-                        <li key={a.id} className="text-xs text-[#8B93A0]">
-                          {a.score}/{a.total} —{' '}
-                          {new Date(a.createdAt).toLocaleDateString(undefined, {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: 'numeric',
-                            minute: '2-digit',
-                          })}
-                        </li>
-                      ))}
-                    </ul>
                   </div>
                 )
               })}
