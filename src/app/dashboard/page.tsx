@@ -61,6 +61,7 @@ export default async function DashboardPage() {
     },
   })
 
+  const displayName = student?.name || user.email
   const modules = student?.modules ?? []
   const allDocuments = modules.flatMap((m) => m.documents)
   const allAttempts = allDocuments.flatMap((d) => d.quizAttempts)
@@ -86,7 +87,7 @@ export default async function DashboardPage() {
     <AppShell>
       <div className="mx-auto max-w-3xl">
         <p className="text-xs font-medium uppercase tracking-wide text-[#5B9DF5]">Welcome back</p>
-        <h1 className="mt-1 font-serif text-2xl text-[#ECE6D6]">{user.email}</h1>
+        <h1 className="mt-1 font-serif text-2xl text-[#ECE6D6]">{displayName}</h1>
         <p className="mt-2 text-sm text-[#8B93A0]">
           {modules.length} {modules.length === 1 ? 'module' : 'modules'} · {allDocuments.length}{' '}
           {allDocuments.length === 1 ? 'document' : 'documents'} uploaded

@@ -40,6 +40,16 @@ export default async function OnboardingPage({
           className="space-y-4 rounded-2xl border border-[#2D3540] bg-[#1A2029] p-6"
         >
           <div>
+            <label className={labelClass}>Your name</label>
+            <input
+              name="name"
+              placeholder="e.g. Jordan"
+              className={inputClass}
+              required
+            />
+          </div>
+
+          <div>
             <label className={labelClass}>Institution</label>
             <input
               name="institution"

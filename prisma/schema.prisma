@@ -17,6 +17,7 @@ model Student {
   id          String   @id @default(uuid())
   authUserId  String   @unique
   email       String   @unique
+  name        String?
   institution String?
   weeklyStudyHours Int?
   faculty     String?

@@ -9,25 +9,34 @@ const navItems = [
   { href: '/upload', label: 'Upload' },
   { href: '/progress', label: 'Progress' },
   { href: '/study-plan', label: 'Study Plan' },
+  { href: '/account', label: 'Account' },
   { href: '/accessibility', label: 'Accessibility' },
 ]
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
-  // Re-apply any saved accessibility settings on every page, not just the
-  // accessibility settings page itself.
+  // Re-apply any saved accessibility settings AND theme on every page, not
+  // just the pages that set them.
   useEffect(() => {
     try {
       const raw = localStorage.getItem('studysphere-a11y')
-      if (!raw) return
-      const settings = JSON.parse(raw)
-      const root = document.documentElement
-      root.setAttribute('data-a11y-spacing', String(Boolean(settings.spacing)))
-      root.setAttribute('data-a11y-contrast', String(Boolean(settings.contrast)))
-      root.setAttribute('data-a11y-large-text', String(Boolean(settings.largeText)))
+      if (raw) {
+        const settings = JSON.parse(raw)
+        const root = document.documentElement
+        root.setAttribute('data-a11y-spacing', String(Boolean(settings.spacing)))
+        root.setAttribute('data-a11y-contrast', String(Boolean(settings.contrast)))
+        root.setAttribute('data-a11y-large-text', String(Boolean(settings.largeText)))
+      }
     } catch {
       // No saved settings, or storage unavailable — nothing to apply.
+    }
+
+    try {
+      const theme = localStorage.getItem('studysphere-theme')
+      document.documentElement.setAttribute('data-theme', theme === 'light' ? 'light' : 'dark')
+    } catch {
+      // No saved theme — default dark stays as-is.
     }
   }, [])
 
@@ -45,14 +54,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </span>
             <span className="font-serif text-xl">StudySphere</span>
           </div>
-          <nav className="flex gap-1 md:block md:space-y-1">
+          <nav className="flex flex-wrap gap-1 md:block md:space-y-1">
             {navItems.map((item) => {
               const active = pathname === item.href
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`block rounded-lg px-3 py-2 text-sm transition-transform transition-colors hover:scale-[1.03] ${
+                  className={`block rounded-lg px-3 py-2 text-sm transition-transform transition-colors hover:scale-[1.05] active:scale-95 ${
                     active
                       ? 'bg-[#1A2029] text-[#5B9DF5]'
                       : 'text-[#8B93A0] hover:bg-[#1A2029] hover:text-[#ECE6D6]'

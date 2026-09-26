@@ -73,3 +73,25 @@ html[data-a11y-spacing="true"] body {
 html[data-a11y-contrast="true"] body {
   filter: contrast(1.35) brightness(1.05);
 }
+
+/* Light mode: a functional color-inversion trick rather than a hand-designed
+   light theme, since colors here are hardcoded per-component. Toggled from
+   /account and applied via data-theme on <html>. */
+html[data-theme="light"] body {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Extend the bubbly, springy feel to links and form fields too. */
+a {
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1), color 150ms, opacity 150ms;
+}
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  transition: border-color 200ms, transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+input:not([type="checkbox"]):not([type="radio"]):focus,
+select:focus,
+textarea:focus {
+  transform: scale(1.01);
+}

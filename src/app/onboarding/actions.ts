@@ -12,6 +12,7 @@ type ProfileInput = {
   authUserId: string
   email: string
   emailConfirmed: boolean
+  name: string
   institution: string
   faculty: string
   moduleNames: string[]
@@ -22,13 +23,13 @@ function isUniqueConstraintError(err: unknown): boolean {
 }
 
 async function upsertStudent(input: ProfileInput) {
-  const { authUserId, email, institution, faculty } = input
+  const { authUserId, email, name, institution, faculty } = input
 
   try {
     return await prisma.student.upsert({
       where: { authUserId },
-      update: { institution, faculty },
-      create: { authUserId, email, institution, faculty },
+      update: { name, institution, faculty },
+      create: { authUserId, email, name, institution, faculty },
     })
   } catch (err) {
     // A profile with this email already exists under an older login.
@@ -37,7 +38,7 @@ async function upsertStudent(input: ProfileInput) {
     if (isUniqueConstraintError(err) && input.emailConfirmed) {
       return await prisma.student.update({
         where: { email },
-        data: { authUserId, institution, faculty },
+        data: { authUserId, name, institution, faculty },
       })
     }
     throw err
@@ -94,6 +95,7 @@ export async function completeOnboarding(formData: FormData) {
     authUserId: user.id,
     email: user.email,
     emailConfirmed: Boolean(user.email_confirmed_at),
+    name: String(formData.get('name') ?? '').trim(),
     institution: String(formData.get('institution') ?? '').trim(),
     faculty: String(formData.get('faculty') ?? '').trim(),
     moduleNames: parseModuleNames(String(formData.get('moduleNames') ?? '')),
