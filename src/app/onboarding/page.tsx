@@ -4,8 +4,8 @@ import { completeOnboarding } from './actions'
 import SubmitButton from '../components/SubmitButton'
 
 const inputClass =
-  'w-full rounded-lg border border-[#2D3540] bg-[#12161C] px-3 py-2 text-sm text-[#ECE6D6] outline-none transition-colors focus:border-[#5B9DF5]'
-const labelClass = 'mb-1.5 block text-xs text-[#8B93A0]'
+  'w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none transition-colors focus:border-[var(--color-primary)]'
+const labelClass = 'mb-1.5 block text-xs text-[var(--color-muted)]'
 
 export default async function OnboardingPage({
   searchParams,
@@ -22,22 +22,22 @@ export default async function OnboardingPage({
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#12161C] px-4 text-[#ECE6D6]">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--color-bg)] px-4 text-[var(--color-text)]">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <h1 className="font-serif text-2xl">Welcome to StudySphere</h1>
-          <p className="mt-1 text-sm text-[#8B93A0]">Tell us a bit about your studies</p>
+          <p className="mt-1 text-sm text-[var(--color-muted)]">Tell us a bit about your studies</p>
         </div>
 
         {error && (
-          <p className="mb-4 rounded-lg border border-[#E86D5F] bg-[#E86D5F]/10 px-3 py-2 text-sm text-[#E86D5F]">
+          <p className="mb-4 rounded-lg border border-[var(--color-error)] bg-[var(--color-error)]/10 px-3 py-2 text-sm text-[var(--color-error)]">
             {error}
           </p>
         )}
 
         <form
           action={completeOnboarding}
-          className="space-y-4 rounded-2xl border border-[#2D3540] bg-[#1A2029] p-6"
+          className="space-y-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-6"
         >
           <div>
             <label className={labelClass}>Your name</label>
@@ -77,7 +77,7 @@ export default async function OnboardingPage({
               rows={4}
               className={inputClass}
             />
-            <p className="mt-1.5 text-xs text-[#8B93A0]">
+            <p className="mt-1.5 text-xs text-[var(--color-muted)]">
               One module per line. You can add more later from the dashboard.
             </p>
           </div>

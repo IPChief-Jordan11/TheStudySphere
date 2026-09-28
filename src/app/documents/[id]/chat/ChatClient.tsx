@@ -72,17 +72,17 @@ export default function ChatClient({ documentId }: { documentId: string }) {
 
   return (
     <div className="mt-6">
-      <div className="space-y-3 rounded-2xl border border-[#2D3540] bg-[#1A2029] p-4">
+      <div className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
         {historyLoaded && messages.length === 0 && (
           <div>
-            <p className="text-sm text-[#8B93A0]">Ask anything about this document. For example:</p>
+            <p className="text-sm text-[var(--color-muted)]">Ask anything about this document. For example:</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {suggestions.map((s) => (
                 <button
                   key={s}
                   type="button"
                   onClick={() => setInput(s)}
-                  className="rounded-full border border-[#2D3540] px-3 py-1.5 text-left text-xs text-[#8B93A0] transition-colors hover:border-[#5B9DF5] hover:text-[#ECE6D6]"
+                  className="rounded-full border border-[var(--color-border)] px-3 py-1.5 text-left text-xs text-[var(--color-muted)] transition-colors hover:border-[var(--color-primary)] hover:text-[var(--color-text)]"
                 >
                   {s}
                 </button>
@@ -96,8 +96,8 @@ export default function ChatClient({ documentId }: { documentId: string }) {
             <div
               className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm [overflow-wrap:anywhere] ${
                 m.role === 'user'
-                  ? 'bg-[#5B9DF5]/20 text-[#ECE6D6]'
-                  : 'border border-[#2D3540] bg-[#12161C] text-[#ECE6D6]'
+                  ? 'bg-[var(--color-primary)]/20 text-[var(--color-text)]'
+                  : 'border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-text)]'
               }`}
             >
               {m.role === 'assistant' ? (
@@ -113,7 +113,7 @@ export default function ChatClient({ documentId }: { documentId: string }) {
 
         {loading && (
           <div className="flex justify-start">
-            <div className="rounded-2xl border border-[#2D3540] bg-[#12161C] px-4 py-2 text-sm text-[#8B93A0]">
+            <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2 text-sm text-[var(--color-muted)]">
               Thinking…
             </div>
           </div>
@@ -123,7 +123,7 @@ export default function ChatClient({ documentId }: { documentId: string }) {
       </div>
 
       {error && (
-        <p className="mt-3 rounded-lg border border-[#E86D5F] bg-[#E86D5F]/10 px-3 py-2 text-sm text-[#E86D5F]">
+        <p className="mt-3 rounded-lg border border-[var(--color-error)] bg-[var(--color-error)]/10 px-3 py-2 text-sm text-[var(--color-error)]">
           {error}
         </p>
       )}
@@ -134,12 +134,12 @@ export default function ChatClient({ documentId }: { documentId: string }) {
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type your question…"
           maxLength={1000}
-          className="min-w-0 flex-1 rounded-lg border border-[#2D3540] bg-[#12161C] px-3 py-2 text-sm text-[#ECE6D6] outline-none transition-colors focus:border-[#5B9DF5]"
+          className="min-w-0 flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none transition-colors focus:border-[var(--color-primary)]"
         />
         <button
           type="submit"
           disabled={loading || !input.trim()}
-          className="rounded-full bg-[#5B9DF5] px-5 py-2 text-sm font-medium text-[#12161C] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-full bg-[var(--color-primary)] px-5 py-2 text-sm font-medium text-[var(--color-bg)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Send
         </button>

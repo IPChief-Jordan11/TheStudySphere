@@ -85,15 +85,15 @@ export default function UploadForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="mt-6 space-y-4 rounded-2xl border border-[#2D3540] bg-[#1A2029] p-6"
+      className="mt-6 space-y-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-6"
     >
       <div>
-        <label className="mb-1.5 block text-xs text-[#8B93A0]">Module</label>
+        <label className="mb-1.5 block text-xs text-[var(--color-muted)]">Module</label>
         <select
           value={moduleId}
           onChange={(e) => setModuleId(e.target.value)}
           disabled={busy}
-          className="w-full rounded-lg border border-[#2D3540] bg-[#12161C] px-3 py-2 text-sm text-[#ECE6D6] outline-none transition-colors focus:border-[#5B9DF5]"
+          className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none transition-colors focus:border-[var(--color-primary)]"
           required
         >
           {modules.map((m) => (
@@ -103,29 +103,29 @@ export default function UploadForm({
       </div>
 
       <div>
-        <label className="mb-1.5 block text-xs text-[#8B93A0]">File</label>
+        <label className="mb-1.5 block text-xs text-[var(--color-muted)]">File</label>
         <input
           type="file"
           accept="image/*,.pdf"
           disabled={busy}
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          className="w-full rounded-lg border border-[#2D3540] bg-[#12161C] px-3 py-2 text-sm text-[#ECE6D6] outline-none file:mr-3 file:rounded-full file:border-0 file:bg-[#5B9DF5] file:px-3 file:py-1 file:text-xs file:font-medium file:text-[#12161C]"
+          className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none file:mr-3 file:rounded-full file:border-0 file:bg-[var(--color-primary)] file:px-3 file:py-1 file:text-xs file:font-medium file:text-[var(--color-bg)]"
           required
         />
-        <p className="mt-1.5 text-xs text-[#8B93A0]">PDF or image, up to 10 MB.</p>
+        <p className="mt-1.5 text-xs text-[var(--color-muted)]">PDF or image, up to 10 MB.</p>
       </div>
 
-      <label className="flex items-start gap-2 text-sm text-[#ECE6D6]">
+      <label className="flex items-start gap-2 text-sm text-[var(--color-text)]">
         <input
           type="checkbox"
           checked={isPastPaper}
           onChange={(e) => setIsPastPaper(e.target.checked)}
           disabled={busy}
-          className="mt-0.5 h-4 w-4 rounded border-[#2D3540] bg-[#12161C] accent-[#5B9DF5]"
+          className="mt-0.5 h-4 w-4 rounded border-[var(--color-border)] bg-[var(--color-bg)] accent-[var(--color-primary)]"
         />
         <span>
           This is a past exam paper for this module
-          <span className="block text-xs text-[#8B93A0]">
+          <span className="block text-xs text-[var(--color-muted)]">
             Used as a style guide when generating exam-style questions from your notes — not
             included as study material itself.
           </span>
@@ -133,7 +133,7 @@ export default function UploadForm({
       </label>
 
       {error && (
-        <p className="rounded-lg border border-[#E86D5F] bg-[#E86D5F]/10 px-3 py-2 text-sm text-[#E86D5F]">
+        <p className="rounded-lg border border-[var(--color-error)] bg-[var(--color-error)]/10 px-3 py-2 text-sm text-[var(--color-error)]">
           {error}
         </p>
       )}
@@ -141,7 +141,7 @@ export default function UploadForm({
       <button
         type="submit"
         disabled={busy}
-        className="w-full rounded-full bg-[#5B9DF5] py-2.5 text-sm font-medium text-[#12161C] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-full bg-[var(--color-primary)] py-2.5 text-sm font-medium text-[var(--color-bg)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {status === 'uploading' && 'Uploading your file…'}
         {status === 'processing' && 'Reading your document… this can take a minute'}

@@ -42,11 +42,11 @@ export default async function ChatPage({
   return (
     <AppShell>
       <div className="mx-auto max-w-2xl">
-        <Link href={`/documents/${id}`} className="text-sm text-[#5FB3A3] hover:underline">
+        <Link href={`/documents/${id}`} className="text-sm text-[var(--color-secondary)] hover:underline">
           ← Back to document
         </Link>
         <h1 className="mt-3 font-serif text-2xl">AI tutor</h1>
-        <p className="mt-1 text-sm text-[#8B93A0] [overflow-wrap:anywhere]">
+        <p className="mt-1 text-sm text-[var(--color-muted)] [overflow-wrap:anywhere]">
           Asking about: {document.fileName}
         </p>
         <ChatClient documentId={id} />

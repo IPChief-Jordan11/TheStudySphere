@@ -69,21 +69,21 @@ export default async function ProgressPage() {
         <h1 className="font-serif text-2xl">Your progress</h1>
 
         {allAttempts.length === 0 ? (
-          <p className="mt-4 text-sm text-[#8B93A0]">
+          <p className="mt-4 text-sm text-[var(--color-muted)]">
             No quiz attempts yet. Generate study materials for a document and take its quiz to
             see your progress here.
           </p>
         ) : (
           <>
-            <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl border border-[#2D3540] bg-[#1A2029] p-6 text-center sm:flex-row sm:justify-center sm:gap-8 sm:text-left">
+            <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-6 text-center sm:flex-row sm:justify-center sm:gap-8 sm:text-left">
               {overallPercent !== null && (
                 <ScoreRing percent={overallPercent} size={128} strokeWidth={12} />
               )}
               <div>
-                <p className="text-sm font-medium text-[#ECE6D6]">
+                <p className="text-sm font-medium text-[var(--color-text)]">
                   {overallPercent !== null && scoreLabel(overallPercent)}
                 </p>
-                <p className="mt-1 text-sm text-[#8B93A0]">
+                <p className="mt-1 text-sm text-[var(--color-muted)]">
                   {allAttempts.length} quiz {allAttempts.length === 1 ? 'attempt' : 'attempts'} across{' '}
                   {documentsWithAttempts.length}{' '}
                   {documentsWithAttempts.length === 1 ? 'document' : 'documents'}
@@ -93,30 +93,30 @@ export default async function ProgressPage() {
 
             {moduleAverages.length > 0 && (
               <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-5">
-                  <h2 className="font-serif text-base text-[#ECE6D6]">Quiz average by module</h2>
+                <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
+                  <h2 className="font-serif text-base text-[var(--color-text)]">Quiz average by module</h2>
                   <div className="mt-4 space-y-3">
                     {moduleAverages.map((mod) => (
                       <div key={mod.id} className="flex items-center gap-3">
                         <ScoreRing percent={mod.percent} size={44} />
-                        <span className="text-sm text-[#ECE6D6]">{mod.name}</span>
+                        <span className="text-sm text-[var(--color-text)]">{mod.name}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-5">
-                  <h2 className="font-serif text-base text-[#ECE6D6]">Gap identified</h2>
+                <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
+                  <h2 className="font-serif text-base text-[var(--color-text)]">Gap identified</h2>
                   {weakest ? (
-                    <p className="mt-3 text-sm text-[#8B93A0]">
-                      <span className="text-[#ECE6D6]">{weakest.name}</span> is your lowest-scoring
+                    <p className="mt-3 text-sm text-[var(--color-muted)]">
+                      <span className="text-[var(--color-text)]">{weakest.name}</span> is your lowest-scoring
                       module at {weakest.percent}%, {Math.abs(gapFromAverage)} points{' '}
                       {gapFromAverage >= 0 ? 'below' : 'above'} your overall average of{' '}
                       {overallPercent}%. Based on {weakest.attemptCount}{' '}
                       {weakest.attemptCount === 1 ? 'quiz' : 'quizzes'} in that module.
                     </p>
                   ) : (
-                    <p className="mt-3 text-sm text-[#8B93A0]">
+                    <p className="mt-3 text-sm text-[var(--color-muted)]">
                       Take a quiz in at least two modules to see how they compare.
                     </p>
                   )}
@@ -124,7 +124,7 @@ export default async function ProgressPage() {
               </div>
             )}
 
-            <h2 className="mt-8 font-serif text-lg text-[#ECE6D6]">By document</h2>
+            <h2 className="mt-8 font-serif text-lg text-[var(--color-text)]">By document</h2>
             <div className="mt-4 space-y-4">
               {documentsWithAttempts.map((doc) => {
                 const best = doc.quizAttempts.reduce(
@@ -132,22 +132,22 @@ export default async function ProgressPage() {
                   0
                 )
                 return (
-                  <div key={doc.id} className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-5">
+                  <div key={doc.id} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
                     <div className="flex items-center gap-4">
                       <ScoreRing percent={best} size={48} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-4">
                           <Link
                             href={`/documents/${doc.id}`}
-                            className="text-sm font-medium text-[#ECE6D6] [overflow-wrap:anywhere] hover:text-[#5B9DF5]"
+                            className="text-sm font-medium text-[var(--color-text)] [overflow-wrap:anywhere] hover:text-[var(--color-primary)]"
                           >
                             {doc.fileName}
                           </Link>
-                          <span className="shrink-0 text-xs text-[#8B93A0]">{doc.moduleName}</span>
+                          <span className="shrink-0 text-xs text-[var(--color-muted)]">{doc.moduleName}</span>
                         </div>
                         <ul className="mt-2 space-y-1">
                           {doc.quizAttempts.map((a) => (
-                            <li key={a.id} className="text-xs text-[#8B93A0]">
+                            <li key={a.id} className="text-xs text-[var(--color-muted)]">
                               {a.score}/{a.total} —{' '}
                               {new Date(a.createdAt).toLocaleDateString(undefined, {
                                 month: 'short',

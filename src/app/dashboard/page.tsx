@@ -7,34 +7,13 @@ import ScoreRing from '../components/ScoreRing'
 
 const prisma = new PrismaClient()
 
-// A small rotating accent palette, used purely for visual variety on cards
-// that don't already carry a score-based color (blue/teal/violet all read
-// well against the dark background).
-const ACCENT_PALETTE = ['#5B9DF5', '#5FB3A3', '#9B8CFF']
-function accentFor(index: number): string {
-  return ACCENT_PALETTE[index % ACCENT_PALETTE.length]
-}
-
-function StatCard({
-  label,
-  value,
-  unit,
-  accent,
-}: {
-  label: string
-  value: string
-  unit?: string
-  accent: string
-}) {
+function StatCard({ label, value, unit }: { label: string; value: string; unit?: string }) {
   return (
-    <div
-      className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-4 border-t-2"
-      style={{ borderTopColor: accent }}
-    >
-      <p className="text-xs text-[#8B93A0]">{label}</p>
-      <p className="mt-1 font-serif text-2xl text-[#ECE6D6]">
+    <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
+      <p className="text-xs text-[var(--color-muted)]">{label}</p>
+      <p className="mt-1 font-serif text-2xl text-[var(--color-text)]">
         {value}
-        {unit && <span className="ml-1 text-sm font-sans text-[#8B93A0]">{unit}</span>}
+        {unit && <span className="ml-1 font-sans text-sm text-[var(--color-muted)]">{unit}</span>}
       </p>
     </div>
   )
@@ -70,7 +49,6 @@ export default async function DashboardPage() {
   const totalPossible = allAttempts.reduce((sum, a) => sum + a.total, 0)
   const avgScorePercent = totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : null
 
-  // Per-module quiz average, so we can call out the module that needs the most practice.
   const moduleStats = modules.map((mod) => {
     const attempts = mod.documents.flatMap((d) => d.quizAttempts)
     const score = attempts.reduce((sum, a) => sum + a.score, 0)
@@ -86,72 +64,70 @@ export default async function DashboardPage() {
   return (
     <AppShell>
       <div className="mx-auto max-w-3xl">
-        <p className="text-xs font-medium uppercase tracking-wide text-[#5B9DF5]">Welcome back</p>
-        <h1 className="mt-1 font-serif text-2xl text-[#ECE6D6]">{displayName}</h1>
-        <p className="mt-2 text-sm text-[#8B93A0]">
+        <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-primary)]">Welcome back</p>
+        <h1 className="mt-1 font-serif text-2xl text-[var(--color-text)]">{displayName}</h1>
+        <p className="mt-2 text-sm text-[var(--color-muted)]">
           {modules.length} {modules.length === 1 ? 'module' : 'modules'} · {allDocuments.length}{' '}
           {allDocuments.length === 1 ? 'document' : 'documents'} uploaded
           {weakestModule && (
-            <> — <span className="text-[#ECE6D6]">{weakestModule.name}</span> could use some practice</>
+            <> — <span className="text-[var(--color-text)]">{weakestModule.name}</span> could use some practice</>
           )}
         </p>
 
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard label="Modules" value={String(modules.length)} accent={accentFor(0)} />
-          <StatCard label="Documents" value={String(allDocuments.length)} accent={accentFor(1)} />
-          <StatCard label="Quizzes completed" value={String(allAttempts.length)} accent={accentFor(2)} />
+          <StatCard label="Modules" value={String(modules.length)} />
+          <StatCard label="Documents" value={String(allDocuments.length)} />
+          <StatCard label="Quizzes completed" value={String(allAttempts.length)} />
           <StatCard
             label="Avg quiz score"
             value={avgScorePercent !== null ? String(avgScorePercent) : '—'}
             unit={avgScorePercent !== null ? '%' : undefined}
-            accent={accentFor(0)}
           />
         </div>
 
-        <h2 className="mt-8 font-serif text-lg text-[#ECE6D6]">Your modules</h2>
+        <h2 className="mt-8 font-serif text-lg text-[var(--color-text)]">Your modules</h2>
 
         {moduleStats.length === 0 ? (
-          <p className="mt-3 text-sm text-[#8B93A0]">
+          <p className="mt-3 text-sm text-[var(--color-muted)]">
             No modules yet.{' '}
-            <Link href="/onboarding" className="text-[#5FB3A3] underline">
+            <Link href="/onboarding" className="text-[var(--color-secondary)] underline">
               Add one to get started
             </Link>
             .
           </p>
         ) : (
           <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {moduleStats.map((mod, i) => (
+            {moduleStats.map((mod) => (
               <div
                 key={mod.id}
-                className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-5 border-l-2 transition-transform hover:scale-[1.01]"
-                style={{ borderLeftColor: accentFor(i) }}
+                className="rounded-xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5"
               >
                 <div className="flex items-start gap-4">
                   {mod.quizAvg !== null ? (
                     <ScoreRing percent={mod.quizAvg} size={56} />
                   ) : (
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-[#2D3540] text-[10px] text-[#8B93A0]">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-[var(--color-border)] text-[10px] text-[var(--color-muted)]">
                       No data
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-3">
-                      <h3 className="font-serif text-base text-[#ECE6D6]">{mod.name}</h3>
-                      <Link
-                        href={`/upload?moduleId=${mod.id}`}
-                        className="shrink-0 rounded-full bg-[#5B9DF5] px-3 py-1 text-xs font-medium text-[#12161C] transition-opacity hover:opacity-90"
-                      >
-                        + Add document
-                      </Link>
-                    </div>
-                    <p className="mt-1 text-xs text-[#8B93A0]">
+                    <h3 className="font-serif text-base text-[var(--color-text)] [overflow-wrap:anywhere]">
+                      {mod.name}
+                    </h3>
+                    <p className="mt-1 text-xs text-[var(--color-muted)]">
                       {mod.documents.length} {mod.documents.length === 1 ? 'document' : 'documents'}
                       {mod.quizAvg === null && ' · No quizzes yet'}
                     </p>
+                    <Link
+                      href={`/upload?moduleId=${mod.id}`}
+                      className="mt-2 inline-block rounded-full bg-[var(--color-primary)] px-3 py-1 text-xs font-medium text-[var(--color-bg)] transition-opacity hover:opacity-90"
+                    >
+                      + Add document
+                    </Link>
 
                     {mod.documents.length > 0 && (
-                      <details className="group mt-2">
-                        <summary className="cursor-pointer list-none text-xs text-[#8B93A0] transition-colors hover:text-[#ECE6D6]">
+                      <details className="group mt-3">
+                        <summary className="cursor-pointer list-none text-xs text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)]">
                           <span className="inline-flex items-center gap-1">
                             <span className="inline-block transition-transform group-open:rotate-90">▶</span>
                             View documents
@@ -162,7 +138,7 @@ export default async function DashboardPage() {
                             <li key={doc.id}>
                               <Link
                                 href={`/documents/${doc.id}`}
-                                className="text-sm text-[#5FB3A3] [overflow-wrap:anywhere] hover:underline"
+                                className="text-sm text-[var(--color-secondary)] [overflow-wrap:anywhere] hover:underline"
                               >
                                 {doc.fileName}
                               </Link>

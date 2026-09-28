@@ -49,7 +49,7 @@ export default function QuizClient({
       <div className="flex items-center justify-between">
         <h2 className="font-serif text-lg">Quiz</h2>
         {submitted && (
-          <p className="text-sm font-medium text-[#5FB3A3]">
+          <p className="text-sm font-medium text-[var(--color-secondary)]">
             Score: {score} / {quiz.length}
           </p>
         )}
@@ -57,19 +57,19 @@ export default function QuizClient({
 
       <div className="mt-3 space-y-3">
         {quiz.map((q, i) => (
-          <div key={i} className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-4">
-            <p className="text-sm font-medium text-[#ECE6D6]">{q.question}</p>
+          <div key={i} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
+            <p className="text-sm font-medium text-[var(--color-text)]">{q.question}</p>
             <ul className="mt-3 space-y-1.5">
               {q.options.map((opt, j) => {
                 const isPicked = answers[i] === j
                 const isCorrect = j === q.correctIndex
 
-                let style = 'text-[#8B93A0] hover:bg-[#12161C]'
+                let style = 'text-[var(--color-muted)] hover:bg-[var(--color-bg)]'
                 if (submitted) {
-                  if (isCorrect) style = 'bg-[#5FB3A3]/15 text-[#5FB3A3]'
-                  else if (isPicked) style = 'bg-[#E86D5F]/15 text-[#E86D5F]'
+                  if (isCorrect) style = 'bg-[var(--color-secondary)]/15 text-[var(--color-secondary)]'
+                  else if (isPicked) style = 'bg-[var(--color-error)]/15 text-[var(--color-error)]'
                 } else if (isPicked) {
-                  style = 'bg-[#5B9DF5]/15 text-[#ECE6D6]'
+                  style = 'bg-[var(--color-primary)]/15 text-[var(--color-text)]'
                 }
 
                 return (
@@ -95,7 +95,7 @@ export default function QuizClient({
           type="button"
           onClick={submit}
           disabled={!allAnswered}
-          className="mt-4 rounded-full bg-[#5B9DF5] px-5 py-2 text-sm font-medium text-[#12161C] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-4 rounded-full bg-[var(--color-primary)] px-5 py-2 text-sm font-medium text-[var(--color-bg)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Submit
         </button>
@@ -104,12 +104,12 @@ export default function QuizClient({
           <button
             type="button"
             onClick={retake}
-            className="rounded-full border border-[#2D3540] px-5 py-2 text-sm font-medium text-[#ECE6D6] transition-colors hover:bg-[#1A2029]"
+            className="rounded-full border border-[var(--color-border)] px-5 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-panel)]"
           >
             Retake quiz
           </button>
-          {saving && <span className="text-xs text-[#8B93A0]">Saving…</span>}
-          {saveError && <span className="text-xs text-[#E86D5F]">{saveError}</span>}
+          {saving && <span className="text-xs text-[var(--color-muted)]">Saving…</span>}
+          {saveError && <span className="text-xs text-[var(--color-error)]">{saveError}</span>}
         </div>
       )}
     </div>

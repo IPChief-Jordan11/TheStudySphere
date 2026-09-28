@@ -4,8 +4,6 @@ import { PrismaClient } from '@prisma/client'
 import AppShell from '../components/AppShell'
 import { updateWeeklyHours } from './actions'
 
-const DAY_ACCENTS = ['#5B9DF5', '#5FB3A3', '#9B8CFF', '#5B9DF5', '#5FB3A3']
-
 const prisma = new PrismaClient()
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const
@@ -16,8 +14,7 @@ const MAX_SESSION_MINUTES = 60
 type Session = { day: string; moduleName: string; label: string; minutes: number; isWeak: boolean }
 
 // Half the week's time is split evenly across every module, so nothing gets
-// skipped; the other half is layered on top, weighted toward weaker modules,
-// so a struggling module still ends up with noticeably more total time.
+// skipped; the other half is layered on top, weighted toward weaker modules.
 const EVEN_SHARE = 0.5
 
 function buildSchedule(
@@ -27,9 +24,6 @@ function buildSchedule(
   const eligible = modules.filter((m) => m.documentCount > 0)
   if (eligible.length === 0 || weeklyHours <= 0) return []
 
-  // Lower quiz average (or no quizzes yet) means higher weight, so weaker
-  // modules get more of the "extra" pool. A module never taking a quiz is
-  // treated as moderately weak, to nudge the student toward trying it.
   const weighted = eligible.map((m) => ({
     ...m,
     weight: m.quizAvg !== null ? Math.max(10, 100 - m.quizAvg) : 55,
@@ -43,7 +37,6 @@ function buildSchedule(
   const sessions: Session[] = []
   let dayIndex = 0
 
-  // Weakest first, so it lands on Monday and gets first pick of the week.
   const sorted = [...weighted].sort((a, b) => b.weight - a.weight)
 
   for (const mod of sorted) {
@@ -111,12 +104,12 @@ export default async function StudyPlanPage() {
     <AppShell>
       <div className="mx-auto max-w-2xl">
         <h1 className="font-serif text-2xl">This week&apos;s study plan</h1>
-        <p className="mt-1 text-sm text-[#8B93A0]">
+        <p className="mt-1 text-sm text-[var(--color-muted)]">
           Built from your quiz scores — weaker modules get more time, placed earlier in the week.
         </p>
 
-        <form action={updateWeeklyHours} className="mt-4 flex items-center gap-2">
-          <label htmlFor="weeklyStudyHours" className="text-xs text-[#8B93A0]">
+        <form action={updateWeeklyHours} className="mt-4 flex flex-wrap items-center gap-2">
+          <label htmlFor="weeklyStudyHours" className="text-xs text-[var(--color-muted)]">
             Hours to study this week
           </label>
           <input
@@ -126,52 +119,48 @@ export default async function StudyPlanPage() {
             min={1}
             max={40}
             defaultValue={weeklyHours}
-            className="w-16 rounded-lg border border-[#2D3540] bg-[#12161C] px-2 py-1 text-sm text-[#ECE6D6] outline-none transition-colors focus:border-[#5B9DF5]"
+            className="w-16 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-1 text-sm text-[var(--color-text)] outline-none transition-colors focus:border-[var(--color-primary)]"
           />
           <button
             type="submit"
-            className="rounded-full border border-[#5B9DF5] px-3 py-1 text-xs font-medium text-[#5B9DF5] transition-colors hover:bg-[#5B9DF5]/10"
+            className="rounded-full border border-[var(--color-primary)] px-3 py-1 text-xs font-medium text-[var(--color-primary)] transition-colors hover:bg-[var(--color-primary)]/10"
           >
             Update
           </button>
         </form>
 
         {schedule.length === 0 ? (
-          <p className="mt-8 text-sm text-[#8B93A0]">
+          <p className="mt-8 text-sm text-[var(--color-muted)]">
             Upload at least one document to a module to get a study plan.
           </p>
         ) : (
           <div className="mt-6 space-y-4">
-            {byDay.map(({ day, sessions }, i) => (
+            {byDay.map(({ day, sessions }) => (
               <div
                 key={day}
-                className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-4 border-t-2"
-                style={{ borderTopColor: DAY_ACCENTS[i % DAY_ACCENTS.length] }}
+                className="rounded-xl border border-[var(--color-border)] bg-[var(--color-panel)] p-4"
               >
-                <p
-                  className="text-xs font-medium uppercase tracking-wide"
-                  style={{ color: DAY_ACCENTS[i % DAY_ACCENTS.length] }}
-                >
+                <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-primary)]">
                   {day}
                 </p>
                 {sessions.length === 0 ? (
-                  <p className="mt-2 text-sm text-[#8B93A0]">Free day — no sessions scheduled.</p>
+                  <p className="mt-2 text-sm text-[var(--color-muted)]">Free day — no sessions scheduled.</p>
                 ) : (
                   <ul className="mt-2 space-y-2">
                     {sessions.map((s, i) => (
                       <li
                         key={i}
-                        className="flex items-center justify-between gap-3 rounded-lg border border-[#2D3540] bg-[#12161C] px-3 py-2"
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2"
                       >
-                        <span className="text-sm text-[#ECE6D6]">
+                        <span className="min-w-0 text-sm text-[var(--color-text)] [overflow-wrap:anywhere]">
                           {s.moduleName} — {s.label}
                           {s.isWeak && (
-                            <span className="ml-2 rounded-full bg-[#E86D5F]/15 px-2 py-0.5 text-[10px] text-[#E86D5F]">
+                            <span className="ml-2 rounded-full bg-[var(--color-error)]/15 px-2 py-0.5 text-[10px] text-[var(--color-error)]">
                               weak area
                             </span>
                           )}
                         </span>
-                        <span className="shrink-0 rounded-full bg-[#1A2029] px-2 py-0.5 text-xs text-[#8B93A0]">
+                        <span className="shrink-0 rounded-full bg-[var(--color-panel)] px-2 py-0.5 text-xs text-[var(--color-muted)]">
                           {s.minutes} min
                         </span>
                       </li>

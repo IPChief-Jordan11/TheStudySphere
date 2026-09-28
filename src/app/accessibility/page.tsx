@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import AppShell from '../components/AppShell'
 
 type Settings = { spacing: boolean; contrast: boolean; largeText: boolean }
+
 const STORAGE_KEY = 'studysphere-a11y'
 const DEFAULTS: Settings = { spacing: false, contrast: false, largeText: false }
 
@@ -18,10 +19,56 @@ function loadSettings(): Settings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return DEFAULTS
-    return { ...DEFAULTS, ...JSON.parse(raw) }
+    const parsed = JSON.parse(raw)
+    return {
+      spacing: Boolean(parsed.spacing),
+      contrast: Boolean(parsed.contrast),
+      largeText: Boolean(parsed.largeText),
+    }
   } catch {
     return DEFAULTS
   }
+}
+
+// Off: knob on the left, dim track. On: knob on the right, track lit up.
+// The knob is positioned with explicit left offsets and every color is set
+// inline, so the state can never drift out of sync with what's drawn.
+function Switch({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean
+  onChange: (value: boolean) => void
+  label: string
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={() => onChange(!checked)}
+      className="relative h-7 w-12 shrink-0 rounded-full border"
+      style={{
+        backgroundColor: checked ? 'var(--color-primary)' : 'var(--color-border)',
+        borderColor: checked ? 'var(--color-primary)' : 'var(--color-muted)',
+        boxShadow: checked ? '0 0 14px rgba(var(--glow), 0.55)' : 'none',
+        transition: 'background-color 300ms, border-color 300ms, box-shadow 300ms, filter 150ms',
+      }}
+    >
+      <span
+        aria-hidden="true"
+        className="absolute h-5 w-5 rounded-full"
+        style={{
+          top: 3,
+          left: checked ? 23 : 3,
+          backgroundColor: checked ? '#f6fbf7' : 'var(--color-muted)',
+          transition: 'left 320ms cubic-bezier(0.34, 1.56, 0.64, 1), background-color 200ms',
+        }}
+      />
+    </button>
+  )
 }
 
 function ToggleRow({
@@ -36,25 +83,20 @@ function ToggleRow({
   onChange: (value: boolean) => void
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-[#2D3540] py-4 last:border-b-0">
-      <div>
-        <p className="text-sm font-medium text-[#ECE6D6]">{title}</p>
-        <p className="mt-0.5 text-xs text-[#8B93A0]">{description}</p>
+    <div className="flex items-center justify-between gap-4 border-b border-[var(--color-border)] py-4 last:border-b-0">
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-[var(--color-text)]">{title}</p>
+        <p className="mt-0.5 text-xs text-[var(--color-muted)]">{description}</p>
       </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        aria-label={title}
-        onClick={() => onChange(!checked)}
-        style={{ backgroundColor: checked ? '#5B9DF5' : '#2D3540' }}
-        className="relative h-6 w-11 shrink-0 rounded-full transition-colors"
-      >
+      <div className="flex shrink-0 items-center gap-2">
         <span
-          style={{ transform: checked ? 'translateX(20px)' : 'translateX(2px)' }}
-          className="absolute top-0.5 h-5 w-5 rounded-full bg-[#ECE6D6] transition-transform"
-        />
-      </button>
+          className="w-7 text-right text-xs font-medium"
+          style={{ color: checked ? 'var(--color-primary)' : 'var(--color-muted)' }}
+        >
+          {checked ? 'On' : 'Off'}
+        </span>
+        <Switch checked={checked} onChange={onChange} label={title} />
+      </div>
     </div>
   )
 }
@@ -85,13 +127,13 @@ export default function AccessibilityPage() {
     <AppShell>
       <div className="mx-auto max-w-xl">
         <h1 className="font-serif text-2xl">Accessibility</h1>
-        <p className="mt-1 text-sm text-[#8B93A0]">
+        <p className="mt-1 text-sm text-[var(--color-muted)]">
           These controls apply across the whole app immediately, and are remembered on this
           device.
         </p>
 
         {loaded && (
-          <div className="mt-6 rounded-2xl border border-[#2D3540] bg-[#1A2029] px-5">
+          <div className="mt-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] px-5">
             <ToggleRow
               title="Dyslexia-friendly spacing"
               description="Wider letter and word spacing, increased line height."
@@ -100,7 +142,7 @@ export default function AccessibilityPage() {
             />
             <ToggleRow
               title="High contrast"
-              description="Boosts contrast across the app. Since colors here aren't yet built on a single theme system, this is a contrast boost rather than a literal black-on-white swap."
+              description="Maximum text contrast and stronger borders, in whichever theme you're using."
               checked={settings.contrast}
               onChange={(v) => update('contrast', v)}
             />
@@ -113,7 +155,7 @@ export default function AccessibilityPage() {
           </div>
         )}
 
-        <p className="mt-4 text-xs text-[#8B93A0]">
+        <p className="mt-4 text-xs text-[var(--color-muted)]">
           Settings are stored only on this device/browser, not on your account, so they won&apos;t
           follow you to another device yet.
         </p>

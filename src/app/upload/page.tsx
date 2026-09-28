@@ -31,7 +31,7 @@ export default async function UploadPage({
   if (!student || student.modules.length === 0) {
     return (
       <AppShell>
-        <p className="text-sm text-[#8B93A0]">
+        <p className="text-sm text-[var(--color-muted)]">
           You need at least one module before uploading. Go back to onboarding first.
         </p>
       </AppShell>

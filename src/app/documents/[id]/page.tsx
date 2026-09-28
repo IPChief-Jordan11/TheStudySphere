@@ -127,13 +127,13 @@ export default async function DocumentPage({
 
         <Link
           href={`/documents/${id}/chat`}
-          className="mt-4 inline-block rounded-full border border-[#5B9DF5] px-5 py-2 text-sm font-medium text-[#5B9DF5] transition-colors hover:bg-[#5B9DF5]/10"
+          className="mt-4 inline-block rounded-full border border-[var(--color-primary)] px-5 py-2 text-sm font-medium text-[var(--color-primary)] transition-colors hover:bg-[var(--color-primary)]/10"
         >
           Ask the AI tutor
         </Link>
 
         {error && (
-          <p className="mt-4 rounded-lg border border-[#E86D5F] bg-[#E86D5F]/10 px-3 py-2 text-sm text-[#E86D5F]">
+          <p className="mt-4 rounded-lg border border-[var(--color-error)] bg-[var(--color-error)]/10 px-3 py-2 text-sm text-[var(--color-error)]">
             {error}
           </p>
         )}
@@ -142,7 +142,7 @@ export default async function DocumentPage({
           <form action={handleGenerate} className="mt-4">
             <button
               type="submit"
-              className="rounded-full bg-[#5B9DF5] px-5 py-2 text-sm font-medium text-[#12161C] transition-opacity hover:opacity-90"
+              className="rounded-full bg-[var(--color-primary)] px-5 py-2 text-sm font-medium text-[var(--color-bg)] transition-opacity hover:opacity-90"
             >
               Generate study materials
             </button>
@@ -153,13 +153,13 @@ export default async function DocumentPage({
           <div className="mt-8 space-y-4">
             <h2 className="font-serif text-lg">Summary</h2>
             {summaryTopics.map((t, i) => (
-              <div key={i} className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-5">
+              <div key={i} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
                 {t.topicTitle && (
-                  <p className="mb-2 text-xs font-medium uppercase tracking-wide text-[#5B9DF5]">
+                  <p className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--color-primary)]">
                     {t.topicTitle}
                   </p>
                 )}
-                <p className="text-sm leading-relaxed text-[#ECE6D6]">{t.summary}</p>
+                <p className="text-sm leading-relaxed text-[var(--color-text)]">{t.summary}</p>
               </div>
             ))}
           </div>
@@ -172,15 +172,15 @@ export default async function DocumentPage({
               {flashcardGroups.map((group, gi) => (
                 <div key={gi}>
                   {group.topic && (
-                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-[#5B9DF5]">
+                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--color-primary)]">
                       {group.topic}
                     </p>
                   )}
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {group.items.map((f, i) => (
-                      <div key={i} className="rounded-xl border border-[#2D3540] bg-[#1A2029] p-4">
-                        <p className="text-sm font-medium text-[#ECE6D6]">{f.question}</p>
-                        <p className="mt-2 text-sm text-[#8B93A0]">{f.answer}</p>
+                      <div key={i} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-panel)] p-4">
+                        <p className="text-sm font-medium text-[var(--color-text)]">{f.question}</p>
+                        <p className="mt-2 text-sm text-[var(--color-muted)]">{f.answer}</p>
                       </div>
                     ))}
                   </div>
@@ -193,7 +193,7 @@ export default async function DocumentPage({
         {quiz && quizByTopic && (
           <>
             {quizByTopic.some((g) => g.topic) && (
-              <p className="mt-6 text-xs text-[#8B93A0]">
+              <p className="mt-6 text-xs text-[var(--color-muted)]">
                 This quiz covers {quizByTopic.length} topics from the document.
               </p>
             )}
@@ -202,34 +202,34 @@ export default async function DocumentPage({
         )}
 
         {document.kind !== 'past_paper' && (
-          <div className="mt-10 border-t border-[#2D3540] pt-6">
+          <div className="mt-10 border-t border-[var(--color-border)] pt-6">
             <div className="flex items-center justify-between gap-3">
               <h2 className="font-serif text-lg">Exam-style practice paper</h2>
               <form action={handleGenerateExam}>
                 <button
                   type="submit"
-                  className="rounded-full border border-[#5B9DF5] px-4 py-1.5 text-xs font-medium text-[#5B9DF5] transition-colors hover:bg-[#5B9DF5]/10"
+                  className="rounded-full border border-[var(--color-primary)] px-4 py-1.5 text-xs font-medium text-[var(--color-primary)] transition-colors hover:bg-[var(--color-primary)]/10"
                 >
                   {exam ? 'Regenerate' : 'Generate exam-style questions'}
                 </button>
               </form>
             </div>
-            <p className="mt-1 text-xs text-[#8B93A0]">
+            <p className="mt-1 text-xs text-[var(--color-muted)]">
               Uses a past paper you've uploaded for this module as a style guide, if one exists.
             </p>
 
             {exam && (
-              <div className="mt-4 rounded-xl border border-[#2D3540] bg-[#1A2029] p-5">
+              <div className="mt-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
                 <h3 className="font-serif text-base">{exam.title}</h3>
                 <ol className="mt-4 space-y-4">
                   {exam.questions.map((q) => (
-                    <li key={q.number} className="text-sm text-[#ECE6D6]">
+                    <li key={q.number} className="text-sm text-[var(--color-text)]">
                       <div className="flex items-start justify-between gap-3">
                         <span>
-                          <span className="text-[#8B93A0]">{q.number}. </span>
+                          <span className="text-[var(--color-muted)]">{q.number}. </span>
                           {q.text}
                         </span>
-                        <span className="shrink-0 text-xs text-[#8B93A0]">[{q.marks}]</span>
+                        <span className="shrink-0 text-xs text-[var(--color-muted)]">[{q.marks}]</span>
                       </div>
                     </li>
                   ))}
