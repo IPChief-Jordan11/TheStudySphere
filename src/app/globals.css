@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./forest.css";
 
 /* Forest palette. Dark is the default; light is a soft sage/cream that is
    gentle on the eyes but keeps strong text contrast. Every color in the app

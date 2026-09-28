@@ -1,0 +1,104 @@
+/* Forest decorations: soft outline watermarks (leaves, branches, birds, pines,
+   ferns, acorns) drawn as CSS masks, so they take the theme's green and follow
+   light/dark mode automatically. They sit behind content, ignore the mouse, and
+   are switched off entirely in high-contrast mode.
+   To make them stronger or fainter, change the two opacity values below. */
+:root {
+  --mark-opacity: 0.10;
+  --mark-opacity-lg: 0.08;
+  --mark-leaf: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 84 C10 48 34 16 84 12 C90 58 62 88 18 84 Z'/%3E%3Cpath d='M18 84 L76 24'/%3E%3Cpath d='M36 66 L34 46 M36 66 L54 68'/%3E%3Cpath d='M48 54 L48 34 M48 54 L68 56'/%3E%3Cpath d='M60 42 L62 24 M60 42 L78 44'/%3E%3Cpath d='M18 84 L8 94'/%3E%3C/g%3E%3C/svg%3E");
+  --mark-sprig: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 90 C28 72 46 54 86 20'/%3E%3Cg transform='translate(24 76) rotate(-110) scale(0.85)'%3E%3Cpath d='M0 0 C7 -9 18 -9 26 0 C18 9 7 9 0 0 Z'/%3E%3Cpath d='M2 0 H22'/%3E%3C/g%3E%3Cg transform='translate(27 74) rotate(-10) scale(0.85)'%3E%3Cpath d='M0 0 C7 -9 18 -9 26 0 C18 9 7 9 0 0 Z'/%3E%3Cpath d='M2 0 H22'/%3E%3C/g%3E%3Cg transform='translate(40 62) rotate(-115) scale(0.8)'%3E%3Cpath d='M0 0 C7 -9 18 -9 26 0 C18 9 7 9 0 0 Z'/%3E%3Cpath d='M2 0 H22'/%3E%3C/g%3E%3Cg transform='translate(43 60) rotate(-15) scale(0.8)'%3E%3Cpath d='M0 0 C7 -9 18 -9 26 0 C18 9 7 9 0 0 Z'/%3E%3Cpath d='M2 0 H22'/%3E%3C/g%3E%3Cg transform='translate(57 47) rotate(-120) scale(0.75)'%3E%3Cpath d='M0 0 C7 -9 18 -9 26 0 C18 9 7 9 0 0 Z'/%3E%3Cpath d='M2 0 H22'/%3E%3C/g%3E%3Cg transform='translate(60 44) rotate(-20) scale(0.75)'%3E%3Cpath d='M0 0 C7 -9 18 -9 26 0 C18 9 7 9 0 0 Z'/%3E%3Cpath d='M2 0 H22'/%3E%3C/g%3E%3Cg transform='translate(74 32) rotate(-125) scale(0.7)'%3E%3Cpath d='M0 0 C7 -9 18 -9 26 0 C18 9 7 9 0 0 Z'/%3E%3Cpath d='M2 0 H22'/%3E%3C/g%3E%3Cg transform='translate(77 29) rotate(-25) scale(0.7)'%3E%3Cpath d='M0 0 C7 -9 18 -9 26 0 C18 9 7 9 0 0 Z'/%3E%3Cpath d='M2 0 H22'/%3E%3C/g%3E%3Cg transform='translate(84 22) rotate(-45) scale(0.6)'%3E%3Cpath d='M0 0 C7 -9 18 -9 26 0 C18 9 7 9 0 0 Z'/%3E%3Cpath d='M2 0 H22'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  --mark-birds: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 44 Q18 30 28 44 Q38 30 48 44'/%3E%3Cpath d='M52 26 Q60 16 68 26 Q76 16 84 26'/%3E%3Cpath d='M40 74 Q47 65 54 74 Q61 65 68 74'/%3E%3C/g%3E%3C/svg%3E");
+  --mark-pine: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M50 6 L32 34 H42 L24 60 H38 L18 86 H82 L62 60 H76 L58 34 H68 Z'/%3E%3Cpath d='M50 86 V96'/%3E%3C/g%3E%3C/svg%3E");
+  --mark-fern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg transform='rotate(14 50 50)'%3E%3Cpath d='M50 96 V8'/%3E%3Cpath d='M50 84 L24 75 M50 84 L76 75'/%3E%3Cpath d='M50 72 L25 63 M50 72 L75 63'/%3E%3Cpath d='M50 60 L28 51 M50 60 L72 51'/%3E%3Cpath d='M50 48 L31 39 M50 48 L69 39'/%3E%3Cpath d='M50 36 L35 27 M50 36 L65 27'/%3E%3Cpath d='M50 24 L39 15 M50 24 L61 15'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  --mark-acorn: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M24 46 C24 30 36 22 50 22 C64 22 76 30 76 46 Z'/%3E%3Cpath d='M50 22 V12 C56 8 62 10 66 6'/%3E%3Cpath d='M30 46 C30 72 42 88 50 94 C58 88 70 72 70 46'/%3E%3Cpath d='M34 34 L40 42 M46 28 L52 42 M58 28 L64 42'/%3E%3C/g%3E%3C/svg%3E");
+  --mark-canopy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M204 16 C150 46 96 78 30 132'/%3E%3Cg transform='translate(186 27) rotate(-60) scale(0.8)'%3E%3Cpath d='M0 0 C7 -9 18 -9 26 0 C18 9 7 9 0 0 Z'/%3E%3Cpath d='M2 0 H22'/%3E%3C/g%3E%3Cg transform='translate(184 29) rotate(35) scale(0.9)'%3E%3Cpath d='M0 0 C7 -9 18 -9 26 0 C18 9 7 9 0 0 Z'/%3E%3Cpath d='M2 0 H22'/%3E%3C/g%3E%3Cg transform='translate(163 39) rotate(-55) scale(0.9)'%3E%3Cpath d='M0 0 C7 -9 18 -9 26 0 C18 9 7 9 0 0 Z'/%3E%3Cpath d='M2 0 H22'/%3E%3C/g%3E%3Cg transform='translate(160 42) rotate(30) scale(0.9)'%3E%3Cpath d='M0 0 C7 -9 18 -9 26 0 C18 9 7 9 0 0 Z'/%3E%3Cpath d='M2 0 H22'/%3E%3C/g%3E%3Cg transform='translate(95 82) rotate(150) scale(1.0)'%3E%3Cpath d='M0 0 C7 -9 18 -9 26 0 C18 9 7 9 0 0 Z'/%3E%3Cpath d='M2 0 H22'/%3E%3C/g%3E%3Cg transform='translate(93 84) rotate(215) scale(1.0)'%3E%3Cpath d='M0 0 C7 -9 18 -9 26 0 C18 9 7 9 0 0 Z'/%3E%3Cpath d='M2 0 H22'/%3E%3C/g%3E%3Cg transform='translate(68 102) rotate(155) scale(0.95)'%3E%3Cpath d='M0 0 C7 -9 18 -9 26 0 C18 9 7 9 0 0 Z'/%3E%3Cpath d='M2 0 H22'/%3E%3C/g%3E%3Cg transform='translate(66 104) rotate(220) scale(0.95)'%3E%3Cpath d='M0 0 C7 -9 18 -9 26 0 C18 9 7 9 0 0 Z'/%3E%3Cpath d='M2 0 H22'/%3E%3C/g%3E%3Cg transform='translate(40 124) rotate(160) scale(0.9)'%3E%3Cpath d='M0 0 C7 -9 18 -9 26 0 C18 9 7 9 0 0 Z'/%3E%3Cpath d='M2 0 H22'/%3E%3C/g%3E%3Cg transform='translate(30 132) rotate(140) scale(0.8)'%3E%3Cpath d='M0 0 C7 -9 18 -9 26 0 C18 9 7 9 0 0 Z'/%3E%3Cpath d='M2 0 H22'/%3E%3C/g%3E%3Cg transform='translate(121 66) scale(1.25) translate(-121 -66)'%3E%3Ccircle cx='121' cy='50' r='12'/%3E%3Ccircle cx='132' cy='38' r='8'/%3E%3Cpath d='M139 36 L148 39 L139 42'/%3E%3Cpath d='M110 58 L92 66 M111 62 L94 72'/%3E%3Cpath d='M114 50 C120 60 130 58 133 50'/%3E%3Cpath d='M117 60 L116 68 M124 60 L125 67'/%3E%3Ccircle cx='134' cy='36' r='1.2' fill='black'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  --mark-treeline: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 80' preserveAspectRatio='none'%3E%3Cg fill='black'%3E%3Cpath d='M20 16.0 L13.7 42.0 H26.3 Z M20 32.1 L9.4 58.2 H30.6 Z M20 48.2 L5.0 74.3 H35.0 Z'/%3E%3Crect x='18' y='72' width='4' height='8'/%3E%3Cpath d='M52 34.0 L47.0 52.5 H57.0 Z M52 45.4 L43.5 63.9 H60.5 Z M52 56.9 L40.0 75.4 H64.0 Z'/%3E%3Crect x='50' y='72' width='4' height='8'/%3E%3Cpath d='M88 8.0 L80.9 37.4 H95.1 Z M88 26.2 L75.9 55.6 H100.1 Z M88 44.4 L71.0 73.8 H105.0 Z'/%3E%3Crect x='86' y='72' width='4' height='8'/%3E%3Cpath d='M128 28.0 L122.5 49.0 H133.5 Z M128 41.0 L118.8 62.0 H137.2 Z M128 54.0 L115.0 75.0 H141.0 Z'/%3E%3Crect x='126' y='72' width='4' height='8'/%3E%3Cpath d='M160 14.0 L153.7 40.9 H166.3 Z M160 30.6 L149.3 57.5 H170.7 Z M160 47.3 L145.0 74.2 H175.0 Z'/%3E%3Crect x='158' y='72' width='4' height='8'/%3E%3Cpath d='M198 36.0 L193.4 53.6 H202.6 Z M198 46.9 L190.2 64.6 H205.8 Z M198 57.8 L187.0 75.5 H209.0 Z'/%3E%3Crect x='196' y='72' width='4' height='8'/%3E%3Cpath d='M232 10.0 L225.3 38.6 H238.7 Z M232 27.7 L220.6 56.2 H243.4 Z M232 45.4 L216.0 73.9 H248.0 Z'/%3E%3Crect x='230' y='72' width='4' height='8'/%3E%3Cpath d='M270 30.0 L264.5 50.2 H275.5 Z M270 42.5 L260.8 62.6 H279.2 Z M270 55.0 L257.0 75.1 H283.0 Z'/%3E%3Crect x='268' y='72' width='4' height='8'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+html[data-a11y-contrast="true"] {
+  --mark-opacity: 0;
+  --mark-opacity-lg: 0;
+}
+
+/* Page canvas: a soft glow from the top-right corner, like light through
+   leaves, a faint branch with a bird in that corner, and a treeline along
+   the bottom edge. */
+body > div[class*="min-h-screen"] {
+  position: relative;
+  isolation: isolate;
+  background-image:
+    radial-gradient(ellipse 70% 45% at 100% 0%, rgba(var(--glow), 0.10), transparent 70%),
+    linear-gradient(to top, rgba(var(--glow), 0.06), transparent 30%);
+}
+
+html[data-a11y-contrast="true"] body > div[class*="min-h-screen"] {
+  background-image: none;
+}
+
+body > div[class*="min-h-screen"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(320px, 70vw);
+  aspect-ratio: 1;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--color-primary);
+  opacity: var(--mark-opacity-lg);
+  -webkit-mask: var(--mark-canopy) no-repeat right top / contain;
+  mask: var(--mark-canopy) no-repeat right top / contain;
+}
+
+body > div[class*="min-h-screen"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 90px;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--color-primary);
+  opacity: var(--mark-opacity-lg);
+  -webkit-mask: var(--mark-treeline) repeat-x left bottom / auto 100%;
+  mask: var(--mark-treeline) repeat-x left bottom / auto 100%;
+}
+
+/* Cards and panels: one small motif in the bottom-right corner, rotating
+   through the set so neighbouring cards differ. Chat bubbles (which have a
+   max-width) are skipped to keep them clean. */
+:is([class*="rounded-xl"], [class*="rounded-2xl"])[class*="border"]:not([class*="max-w-"]) {
+  position: relative;
+  isolation: isolate;
+  --mark: var(--mark-leaf);
+}
+:is([class*="rounded-xl"], [class*="rounded-2xl"])[class*="border"]:not([class*="max-w-"]):nth-child(6n + 2) { --mark: var(--mark-sprig); }
+:is([class*="rounded-xl"], [class*="rounded-2xl"])[class*="border"]:not([class*="max-w-"]):nth-child(6n + 3) { --mark: var(--mark-pine); }
+:is([class*="rounded-xl"], [class*="rounded-2xl"])[class*="border"]:not([class*="max-w-"]):nth-child(6n + 4) { --mark: var(--mark-birds); }
+:is([class*="rounded-xl"], [class*="rounded-2xl"])[class*="border"]:not([class*="max-w-"]):nth-child(6n + 5) { --mark: var(--mark-fern); }
+:is([class*="rounded-xl"], [class*="rounded-2xl"])[class*="border"]:not([class*="max-w-"]):nth-child(6n + 6) { --mark: var(--mark-acorn); }
+
+:is([class*="rounded-xl"], [class*="rounded-2xl"])[class*="border"]:not([class*="max-w-"])::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  width: clamp(44px, 30%, 76px);
+  aspect-ratio: 1;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--color-primary);
+  opacity: var(--mark-opacity);
+  transform-origin: 80% 100%;
+  transition: opacity 300ms, transform 500ms var(--bounce);
+  -webkit-mask: var(--mark) no-repeat center / contain;
+  mask: var(--mark) no-repeat center / contain;
+}
+
+/* On hover the motif brightens a touch and sways, like a leaf in a breeze. */
+:is([class*="rounded-xl"], [class*="rounded-2xl"])[class*="border"]:not([class*="max-w-"]):hover::after {
+  opacity: calc(var(--mark-opacity) * 1.7);
+  transform: rotate(-8deg) scale(1.1);
+}
