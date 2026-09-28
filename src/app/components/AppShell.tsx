@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import LogoMark from './LogoMark'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -96,13 +97,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <aside className="shrink-0 border-b border-[var(--color-border)] px-4 py-3 md:sticky md:top-0 md:flex md:h-screen md:w-56 md:flex-col md:border-b-0 md:border-r md:p-6">
         <div className="flex items-center justify-between md:mb-8">
           <div className="flex items-center gap-2">
-            <span
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-[var(--color-bg)]"
-              style={{ background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))' }}
-              aria-hidden="true"
-            >
-              S
-            </span>
+            <LogoMark size={28} />
             <span className="font-serif text-xl">StudySphere</span>
           </div>
           <div className="md:hidden">
