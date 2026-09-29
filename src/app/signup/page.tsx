@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import LogoMark from '../components/LogoMark'
 import { useRouter } from 'next/navigation'
 
 export default function SignUpPage() {
@@ -32,8 +33,9 @@ export default function SignUpPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--color-bg)] px-4 text-[var(--color-text)]">
       <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <h1 className="font-serif text-2xl">StudySphere</h1>
+        <div className="mb-8 flex flex-col items-center text-center">
+          <LogoMark size={44} />
+          <h1 className="mt-3 font-serif text-2xl">StudySphere</h1>
           <p className="mt-1 text-sm text-[var(--color-muted)]">Create your account</p>
         </div>
 

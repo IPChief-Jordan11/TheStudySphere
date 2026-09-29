@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { completeOnboarding } from './actions'
 import SubmitButton from '../components/SubmitButton'
+import LogoMark from '../components/LogoMark'
 
 const inputClass =
   'w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none transition-colors focus:border-[var(--color-primary)]'
@@ -24,8 +25,9 @@ export default async function OnboardingPage({
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--color-bg)] px-4 text-[var(--color-text)]">
       <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <h1 className="font-serif text-2xl">Welcome to StudySphere</h1>
+        <div className="mb-8 flex flex-col items-center text-center">
+          <LogoMark size={44} />
+          <h1 className="mt-3 font-serif text-2xl">Welcome to StudySphere</h1>
           <p className="mt-1 text-sm text-[var(--color-muted)]">Tell us a bit about your studies</p>
         </div>
 
