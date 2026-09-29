@@ -106,13 +106,13 @@ export default function UploadForm({
         <label className="mb-1.5 block text-xs text-[var(--color-muted)]">File</label>
         <input
           type="file"
-          accept="image/*,.pdf"
+          accept=".pdf,.pptx,image/png,image/jpeg,image/gif,image/bmp"
           disabled={busy}
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] outline-none file:mr-3 file:rounded-full file:border-0 file:bg-[var(--color-primary)] file:px-3 file:py-1 file:text-xs file:font-medium file:text-[var(--color-bg)]"
           required
         />
-        <p className="mt-1.5 text-xs text-[var(--color-muted)]">PDF or image, up to 10 MB.</p>
+        <p className="mt-1.5 text-xs text-[var(--color-muted)]">PDF, PowerPoint (.pptx), or image (PNG/JPG/GIF/BMP), up to 10 MB.</p>
       </div>
 
       <label className="flex items-start gap-2 text-sm text-[var(--color-text)]">

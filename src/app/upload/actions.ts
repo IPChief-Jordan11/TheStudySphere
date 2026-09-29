@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { PrismaClient } from '@prisma/client'
 import { PDFDocument } from 'pdf-lib'
+import JSZip from 'jszip'
 
 const prisma = new PrismaClient()
 
@@ -40,15 +41,13 @@ async function runWithConcurrency<T, R>(
   return results
 }
 
-async function ocrBase64(base64: string, mime: string): Promise<string> {
+async function ocrBase64(base64: string, mime: string, ocrFiletype: string): Promise<string> {
   const params = new URLSearchParams({
     base64Image: `data:${mime};base64,${base64}`,
     language: 'eng',
     isOverlayRequired: 'false',
+    filetype: ocrFiletype,
   })
-  if (mime === 'application/pdf') {
-    params.set('filetype', 'PDF')
-  }
 
   const response = await fetch('https://api.ocr.space/parse/image', {
     method: 'POST',
@@ -70,8 +69,9 @@ async function ocrBase64(base64: string, mime: string): Promise<string> {
     )
   }
 
-  // OCR.space reports failures (bad key, rate limit, file too large) inside a normal
-  // JSON response, so check for them explicitly instead of treating them as "no text".
+  // OCR.space reports failures (bad key, rate limit, file too large, unsupported
+  // format) inside a normal JSON response, so check for them explicitly rather
+  // than treating a failed response as "no text found".
   if (result?.IsErroredOnProcessing) {
     const message = Array.isArray(result.ErrorMessage)
       ? result.ErrorMessage.join(' ')
@@ -86,21 +86,85 @@ async function ocrBase64(base64: string, mime: string): Promise<string> {
 }
 
 // One retry covers most temporary network or rate-limit hiccups.
-async function ocrWithRetry(base64: string, mime: string): Promise<string> {
+async function ocrWithRetry(base64: string, mime: string, ocrFiletype: string): Promise<string> {
   try {
-    return await ocrBase64(base64, mime)
+    return await ocrBase64(base64, mime, ocrFiletype)
   } catch (err) {
     console.error('OCR attempt 1 failed, retrying once:', err)
-    return await ocrBase64(base64, mime)
+    return await ocrBase64(base64, mime, ocrFiletype)
   }
 }
 
-function guessMime(fileName: string): { isPdf: boolean; mime: string } {
+// OCR.space only supports these image formats. Anything else (WEBP, HEIC/HEIF
+// from phone cameras, etc.) fails there every time, so we catch it early with
+// a clear message instead of a confusing OCR error.
+const IMAGE_TYPES: Record<string, { mime: string; ocrFiletype: string }> = {
+  png: { mime: 'image/png', ocrFiletype: 'PNG' },
+  jpg: { mime: 'image/jpeg', ocrFiletype: 'JPG' },
+  jpeg: { mime: 'image/jpeg', ocrFiletype: 'JPG' },
+  gif: { mime: 'image/gif', ocrFiletype: 'GIF' },
+  bmp: { mime: 'image/bmp', ocrFiletype: 'BMP' },
+}
+
+type FileKind =
+  | { type: 'pdf' }
+  | { type: 'pptx' }
+  | { type: 'image'; mime: string; ocrFiletype: string }
+
+function detectFileKind(fileName: string): FileKind | null {
   const ext = (fileName.split('.').pop() ?? '').toLowerCase()
-  if (ext === 'pdf') return { isPdf: true, mime: 'application/pdf' }
-  if (ext === 'png') return { isPdf: false, mime: 'image/png' }
-  if (ext === 'jpg' || ext === 'jpeg') return { isPdf: false, mime: 'image/jpeg' }
-  return { isPdf: false, mime: 'image/jpeg' }
+  if (ext === 'pdf') return { type: 'pdf' }
+  if (ext === 'pptx') return { type: 'pptx' }
+  if (IMAGE_TYPES[ext]) return { type: 'image', ...IMAGE_TYPES[ext] }
+  return null
+}
+
+// Decodes the handful of XML entities that show up in PowerPoint's text runs.
+function decodeXmlEntities(text: string): string {
+  return text
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, '&')
+}
+
+// PowerPoint files are zip archives of XML, and the text is already digital
+// (not a scanned image), so it's read directly — no OCR involved, which is
+// both faster and more accurate than OCR would be.
+async function extractPptxText(buffer: ArrayBuffer): Promise<string> {
+  let zip: JSZip
+  try {
+    zip = await JSZip.loadAsync(buffer)
+  } catch (err) {
+    console.error('PPTX unzip failed:', err)
+    throw new UserFacingError(
+      'This PowerPoint file could not be opened. It may be corrupted or password-protected.'
+    )
+  }
+
+  const slideFiles = Object.keys(zip.files)
+    .filter((name) => /^ppt\/slides\/slide\d+\.xml$/.test(name))
+    .sort((a, b) => {
+      const numA = Number(a.match(/slide(\d+)\.xml/)?.[1] ?? 0)
+      const numB = Number(b.match(/slide(\d+)\.xml/)?.[1] ?? 0)
+      return numA - numB
+    })
+
+  if (slideFiles.length === 0) {
+    throw new UserFacingError('No slides were found in this PowerPoint file.')
+  }
+
+  const slideTexts: string[] = []
+  for (let i = 0; i < slideFiles.length; i++) {
+    const xml = await zip.files[slideFiles[i]].async('text')
+    // Text in OOXML slides lives inside <a:t>...</a:t> runs.
+    const matches = [...xml.matchAll(/<a:t>([^<]*)<\/a:t>/g)].map((m) => decodeXmlEntities(m[1]))
+    const slideText = matches.join(' ').trim()
+    slideTexts.push(`--- Slide ${i + 1} ---\n\n${slideText || '(No text on this slide)'}`)
+  }
+
+  return slideTexts.join('\n\n')
 }
 
 async function processAndSave(
@@ -110,6 +174,14 @@ async function processAndSave(
   kind: DocumentKind,
   supabase: SupabaseClient
 ): Promise<FinalizeResult> {
+  const fileKind = detectFileKind(fileName)
+  if (!fileKind) {
+    return {
+      error:
+        'That file type is not supported yet. Please upload a PDF, PowerPoint (.pptx), or an image (PNG, JPG, GIF, or BMP).',
+    }
+  }
+
   const { data: fileBlob, error: downloadError } = await supabase.storage
     .from('documents')
     .download(filePath)
@@ -121,14 +193,13 @@ async function processAndSave(
 
   const { data: publicUrlData } = supabase.storage.from('documents').getPublicUrl(filePath)
   const fileUrl = publicUrlData.publicUrl
-  const { isPdf } = guessMime(fileName)
 
   try {
     const fileBuffer = await fileBlob.arrayBuffer()
     let extractedText: string
     let realChars = 0
 
-    if (isPdf) {
+    if (fileKind.type === 'pdf') {
       let sourcePdf: PDFDocument
       try {
         sourcePdf = await PDFDocument.load(fileBuffer)
@@ -155,7 +226,7 @@ async function processAndSave(
         const chunkBase64 = Buffer.from(chunkBytes).toString('base64')
 
         const started = Date.now()
-        const chunkText = await ocrWithRetry(chunkBase64, 'application/pdf')
+        const chunkText = await ocrWithRetry(chunkBase64, 'application/pdf', 'PDF')
         console.log(
           `OCR pages ${start + 1}-${end} of ${totalPages} took ${Date.now() - started}ms`
         )
@@ -167,16 +238,22 @@ async function processAndSave(
 
       realChars = chunkTexts.reduce((sum, t) => sum + t.length, 0)
       extractedText = chunkTexts.join('\n\n')
+    } else if (fileKind.type === 'pptx') {
+      extractedText = await extractPptxText(fileBuffer)
+      realChars = extractedText.length
     } else {
-      const { mime } = guessMime(fileName)
-      const text = await ocrWithRetry(Buffer.from(fileBuffer).toString('base64'), mime)
+      const text = await ocrWithRetry(
+        Buffer.from(fileBuffer).toString('base64'),
+        fileKind.mime,
+        fileKind.ocrFiletype
+      )
       realChars = text.length
       extractedText = text
     }
 
     if (realChars < 20) {
       throw new UserFacingError(
-        "We couldn't read any text from this file. Try a clearer scan or a text-based PDF."
+        "We couldn't read any text from this file. Try a clearer scan, a text-based PDF, or a PowerPoint with actual text on the slides."
       )
     }
 
