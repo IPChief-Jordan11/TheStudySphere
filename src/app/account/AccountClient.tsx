@@ -2,6 +2,7 @@
 
 import AppShell from '../components/AppShell'
 import { addModule, removeModule } from './actions'
+import UpgradePanel from './UpgradePanel'
 
 type Profile = {
   name: string | null
@@ -9,6 +10,7 @@ type Profile = {
   institution: string | null
   faculty: string | null
   modules: { id: string; name: string }[]
+  premiumUntil: string | null
 }
 
 export default function AccountClient({ profile, error }: { profile: Profile; error?: string }) {
@@ -87,6 +89,8 @@ export default function AccountClient({ profile, error }: { profile: Profile; er
             </button>
           </form>
         </div>
+
+        <UpgradePanel premiumUntil={profile.premiumUntil} />
 
         <p className="mt-4 text-xs text-[var(--color-muted)]">
           You can switch between light and dark mode from the icon in the sidebar.

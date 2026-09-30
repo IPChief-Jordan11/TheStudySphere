@@ -33,6 +33,7 @@ export default async function AccountPage({
         institution: student?.institution ?? null,
         faculty: student?.faculty ?? null,
         modules: student?.modules ?? [],
+        premiumUntil: student?.premiumUntil ? student.premiumUntil.toISOString() : null,
       }}
     />
   )
