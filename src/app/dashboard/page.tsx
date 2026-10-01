@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { PrismaClient } from '@prisma/client'
 import Link from 'next/link'
 import AppShell from '../components/AppShell'
+import DeleteDocumentButton from '../components/DeleteDocumentButton'
 import ScoreRing from '../components/ScoreRing'
 
 const prisma = new PrismaClient()
@@ -135,13 +136,14 @@ export default async function DashboardPage() {
                         </summary>
                         <ul className="mt-2 space-y-1.5">
                           {mod.documents.map((doc) => (
-                            <li key={doc.id}>
+                            <li key={doc.id} className="flex items-center justify-between gap-2">
                               <Link
                                 href={`/documents/${doc.id}`}
-                                className="text-sm text-[var(--color-secondary)] [overflow-wrap:anywhere] hover:underline"
+                                className="min-w-0 text-sm text-[var(--color-secondary)] [overflow-wrap:anywhere] hover:underline"
                               >
                                 {doc.fileName}
                               </Link>
+                              <DeleteDocumentButton documentId={doc.id} fileName={doc.fileName} />
                             </li>
                           ))}
                         </ul>

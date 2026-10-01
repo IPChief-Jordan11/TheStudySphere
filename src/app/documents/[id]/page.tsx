@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { generateStudyMaterials } from './actions'
 import { generateExamPaper } from './exam-actions'
 import AppShell from '../../components/AppShell'
+import DeleteDocumentButton from '../../components/DeleteDocumentButton'
 import QuizClient from './QuizClient'
 
 const prisma = new PrismaClient()
@@ -125,12 +126,19 @@ export default async function DocumentPage({
       <div className="mx-auto max-w-2xl">
         <h1 className="font-serif text-2xl [overflow-wrap:anywhere]">{document.fileName}</h1>
 
-        <Link
-          href={`/documents/${id}/chat`}
-          className="mt-4 inline-block rounded-full border border-[var(--color-primary)] px-5 py-2 text-sm font-medium text-[var(--color-primary)] transition-colors hover:bg-[var(--color-primary)]/10"
-        >
-          Ask the AI tutor
-        </Link>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <Link
+            href={`/documents/${id}/chat`}
+            className="inline-block rounded-full border border-[var(--color-primary)] px-5 py-2 text-sm font-medium text-[var(--color-primary)] transition-colors hover:bg-[var(--color-primary)]/10"
+          >
+            Ask the AI tutor
+          </Link>
+          <DeleteDocumentButton
+            documentId={id}
+            fileName={document.fileName}
+            className="rounded-full border border-[var(--color-border)] px-5 py-2 text-sm text-[var(--color-muted)] hover:border-[var(--color-error)] hover:text-[var(--color-error)]"
+          />
+        </div>
 
         {error && (
           <p className="mt-4 rounded-lg border border-[var(--color-error)] bg-[var(--color-error)]/10 px-3 py-2 text-sm text-[var(--color-error)]">
