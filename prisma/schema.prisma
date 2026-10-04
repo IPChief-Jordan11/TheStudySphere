@@ -20,6 +20,7 @@ model Student {
   name        String?
   institution String?
   weeklyStudyHours Int?
+  studySessions    StudySession[]
   premiumUntil     DateTime?
   faculty     String?
   createdAt   DateTime @default(now())
@@ -37,6 +38,8 @@ model Module {
   createdAt  DateTime @default(now())
 
   documents  UploadedDocument[]
+  examDate   DateTime?
+  studySessions StudySession[]
 }
 
 model UploadedDocument {
@@ -98,5 +101,18 @@ model GenerationEvent {
   id        String   @id @default(uuid())
   studentId String
   student   Student  @relation(fields: [studentId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model StudySession {
+  id        String   @id @default(uuid())
+  moduleId  String
+  module    Module   @relation(fields: [moduleId], references: [id])
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  date      DateTime
+  label     String
+  minutes   Int
+  completed Boolean  @default(false)
   createdAt DateTime @default(now())
 }
