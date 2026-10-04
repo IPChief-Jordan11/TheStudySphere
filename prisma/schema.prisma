@@ -26,6 +26,7 @@ model Student {
 
   modules     Module[]
   payments    Payment[]
+  generationEvents GenerationEvent[]
 }
 
 model Module {
@@ -91,4 +92,11 @@ model Payment {
   pollUrl    String
   createdAt  DateTime @default(now())
   paidAt     DateTime?
+}
+
+model GenerationEvent {
+  id        String   @id @default(uuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  createdAt DateTime @default(now())
 }

@@ -63,6 +63,28 @@ function groupByTopic<T extends { topic?: string }>(items: T[]): { topic: string
   return order.map((topic) => ({ topic, items: buckets.get(topic)! }))
 }
 
+function DownloadPdfLink({ href, isPremium, label }: { href: string; isPremium: boolean; label: string }) {
+  if (isPremium) {
+    return (
+      <a
+        href={href}
+        className="rounded-full border border-[var(--color-secondary)] px-3 py-1 text-xs font-medium text-[var(--color-secondary)] transition-colors hover:bg-[var(--color-secondary)]/10"
+      >
+        {label}
+      </a>
+    )
+  }
+  return (
+    <Link
+      href="/account"
+      title="Downloadable PDFs are a Premium feature"
+      className="rounded-full border border-[var(--color-border)] px-3 py-1 text-xs text-[var(--color-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+    >
+      {label} 🔒 Premium
+    </Link>
+  )
+}
+
 export default async function DocumentPage({
   params,
   searchParams,
@@ -94,6 +116,8 @@ export default async function DocumentPage({
   if (!document || !student?.modules.some((m) => m.id === document.moduleId)) {
     notFound()
   }
+
+  const isPremium = Boolean(student?.premiumUntil && student.premiumUntil > new Date())
 
   const summaryTopics = parseSummary(
     document.generatedContent.find((c) => c.type === 'summary')?.content
@@ -159,7 +183,14 @@ export default async function DocumentPage({
 
         {summaryTopics && (
           <div className="mt-8 space-y-4">
-            <h2 className="font-serif text-lg">Summary</h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="font-serif text-lg">Summary</h2>
+              <DownloadPdfLink
+                href={`/api/documents/${id}/pdf`}
+                isPremium={isPremium}
+                label="Download PDF"
+              />
+            </div>
             {summaryTopics.map((t, i) => (
               <div key={i} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
                 {t.topicTitle && (
@@ -228,7 +259,14 @@ export default async function DocumentPage({
 
             {exam && (
               <div className="mt-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
-                <h3 className="font-serif text-base">{exam.title}</h3>
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="font-serif text-base">{exam.title}</h3>
+                  <DownloadPdfLink
+                    href={`/api/documents/${id}/exam-pdf`}
+                    isPremium={isPremium}
+                    label="Download PDF"
+                  />
+                </div>
                 <ol className="mt-4 space-y-4">
                   {exam.questions.map((q) => (
                     <li key={q.number} className="text-sm text-[var(--color-text)]">

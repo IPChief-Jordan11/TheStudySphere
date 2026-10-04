@@ -5,6 +5,7 @@ import { PrismaClient } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { FREE_DAILY_GENERATIONS, startOfTodayUTC } from '@/lib/premium'
 
 const prisma = new PrismaClient()
 
@@ -139,6 +140,19 @@ async function createExamPaper(documentId: string, userId: string): Promise<stri
       return 'This document has no readable text to generate an exam from.'
     }
 
+    const isPremium = Boolean(student.premiumUntil && student.premiumUntil > new Date())
+
+    // Shared with regular generation: a daily cap for free accounts, resetting
+    // at midnight UTC.
+    if (!isPremium) {
+      const usedToday = await prisma.generationEvent.count({
+        where: { studentId: student.id, createdAt: { gte: startOfTodayUTC() } },
+      })
+      if (usedToday >= FREE_DAILY_GENERATIONS) {
+        return `Free accounts can generate study materials ${FREE_DAILY_GENERATIONS} times per day (resets at midnight UTC). Upgrade to Premium from your Account page for unlimited generations.`
+      }
+    }
+
     // Look for a past paper uploaded to the same module, to use as a style guide.
     // This is optional — the exam is still generated without one.
     const pastPaper = await prisma.uploadedDocument.findFirst({
@@ -159,6 +173,8 @@ async function createExamPaper(documentId: string, userId: string): Promise<stri
         data: { type: 'exam', content: JSON.stringify(exam), documentId },
       }),
     ])
+
+    await prisma.generationEvent.create({ data: { studentId: student.id } })
 
     return null
   } catch (err) {

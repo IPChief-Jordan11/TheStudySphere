@@ -5,14 +5,12 @@ import { PrismaClient } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { FREE_DAILY_GENERATIONS, startOfTodayUTC } from '@/lib/premium'
 
 const prisma = new PrismaClient()
 
 const MODEL = 'openai/gpt-oss-120b'
 
-// Groq's free tier limits requests to 8,000 tokens per minute, so each section
-// must stay well under that, and sections are generated one at a time with a
-// pause in between rather than all at once.
 const SECTION_CHARS = 13_000
 const SPLIT_THRESHOLD_CHARS = 16_000
 const MAX_SECTIONS = 6
@@ -20,11 +18,6 @@ const DELAY_BETWEEN_SECTIONS_MS = 15_000
 
 const MIN_ITEMS = 3
 const MAX_ITEMS = 10
-
-// Free accounts can generate study materials for up to this many documents in
-// total; regenerating a document that already has materials doesn't count
-// again. Premium removes this cap entirely.
-const FREE_DOCUMENT_LIMIT = 3
 
 type Flashcard = { question: string; answer: string; topic?: string }
 type QuizQuestion = { question: string; options: string[]; correctIndex: number; topic?: string }
@@ -200,21 +193,14 @@ async function createMaterials(documentId: string, userId: string): Promise<stri
 
     const isPremium = Boolean(student.premiumUntil && student.premiumUntil > new Date())
 
-    // Free accounts: count distinct documents (across all of this student's
-    // modules) that already have generated materials, not counting this one.
-    // Regenerating a document you've already generated never counts again.
+    // Free accounts: a shared daily cap across both regular generation and
+    // exam-paper generation, resetting at midnight UTC.
     if (!isPremium) {
-      const moduleIds = student.modules.map((m) => m.id)
-      const generatedRows = await prisma.generatedContent.findMany({
-        where: { document: { moduleId: { in: moduleIds } } },
-        select: { documentId: true },
-        distinct: ['documentId'],
+      const usedToday = await prisma.generationEvent.count({
+        where: { studentId: student.id, createdAt: { gte: startOfTodayUTC() } },
       })
-      const alreadyGeneratedIds = new Set(generatedRows.map((r) => r.documentId))
-      const isNewDocument = !alreadyGeneratedIds.has(documentId)
-
-      if (isNewDocument && alreadyGeneratedIds.size >= FREE_DOCUMENT_LIMIT) {
-        return `Free accounts can generate study materials for up to ${FREE_DOCUMENT_LIMIT} documents. Upgrade to Premium from your Account page for unlimited documents.`
+      if (usedToday >= FREE_DAILY_GENERATIONS) {
+        return `Free accounts can generate study materials ${FREE_DAILY_GENERATIONS} times per day (resets at midnight UTC). Upgrade to Premium from your Account page for unlimited generations.`
       }
     }
 
@@ -262,6 +248,10 @@ async function createMaterials(documentId: string, userId: string): Promise<stri
         ],
       }),
     ])
+
+    // Logged for every account, but only enforced against free ones — useful
+    // to have the history either way.
+    await prisma.generationEvent.create({ data: { studentId: student.id } })
 
     return null
   } catch (err) {
