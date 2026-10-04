@@ -7,7 +7,22 @@ const LINE_HEIGHT = 16
 
 type Cursor = { doc: PDFDocument; page: PDFPage; y: number; font: PDFFont; bold: PDFFont }
 
+// pdf-lib's default font only supports the WinAnsi character set. AI-generated
+// text often contains characters outside it (smart quotes, em/en dashes, a
+// non-breaking hyphen, ellipsis chars), which would otherwise crash the whole
+// PDF. Swap each one for its plain-ASCII equivalent before drawing any text.
+function sanitizeForPdf(text: string): string {
+  return text
+    .replace(/[\u2010\u2011\u2012\u2013\u2014\u2015]/g, '-')
+    .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
+    .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
+    .replace(/\u2026/g, '...')
+    .replace(/[\u00A0\u2000-\u200B]/g, ' ')
+    .replace(/[^\x00-\xFF]/g, '?')
+}
+
 function wrapLine(text: string, font: PDFFont, size: number, maxWidth: number): string[] {
+  text = sanitizeForPdf(text)
   const words = text.split(' ')
   const lines: string[] = []
   let current = ''
