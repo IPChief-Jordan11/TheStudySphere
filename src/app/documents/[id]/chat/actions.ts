@@ -3,6 +3,7 @@
 import Groq from 'groq-sdk'
 import { PrismaClient } from '@prisma/client'
 import { createClient } from '@/lib/supabase/server'
+import { reserveGroqCapacity, estimateTokens } from '@/lib/groqLimiter'
 
 const prisma = new PrismaClient()
 
@@ -90,13 +91,23 @@ export async function askTutor(
       .slice(-MAX_HISTORY_MESSAGES)
       .map((m) => ({ role: m.role, content: m.content.slice(0, MAX_MESSAGE_CHARS) }))
 
+    const notes = document.extractedText.slice(0, MAX_NOTES_CHARS)
+    const systemPrompt = buildSystemPrompt(notes)
+
+    // Shared app-wide Groq budget check — this is the most frequently used AI
+    // feature, so it's the one most likely to collide with other users.
+    const totalChars =
+      systemPrompt.length + cleanQuestion.length + pastMessages.reduce((sum, m) => sum + m.content.length, 0)
+    try {
+      await reserveGroqCapacity(estimateTokens('x'.repeat(totalChars)))
+    } catch {
+      return { error: 'The AI service is busy right now. Please wait a minute and try again.' }
+    }
+
     const completion = await groq.chat.completions.create({
       model: MODEL,
       messages: [
-        {
-          role: 'system',
-          content: buildSystemPrompt(document.extractedText.slice(0, MAX_NOTES_CHARS)),
-        },
+        { role: 'system', content: systemPrompt },
         ...pastMessages,
         { role: 'user', content: cleanQuestion },
       ],

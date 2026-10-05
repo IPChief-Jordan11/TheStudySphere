@@ -116,3 +116,9 @@ model StudySession {
   completed Boolean  @default(false)
   createdAt DateTime @default(now())
 }
+
+model GroqCallLog {
+  id               String   @id @default(uuid())
+  estimatedTokens  Int
+  createdAt        DateTime @default(now())
+}

@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { FREE_DAILY_GENERATIONS, startOfTodayUTC } from '@/lib/premium'
+import { reserveGroqCapacity, estimateTokens } from '@/lib/groqLimiter'
 
 const prisma = new PrismaClient()
 
@@ -99,9 +100,16 @@ async function generateExam(notes: string, styleSample: string | null): Promise<
   const groq = getGroq()
 
   for (let attempt = 1; attempt <= 2; attempt++) {
+    const prompt = buildPrompt(notes, styleSample)
+    try {
+      await reserveGroqCapacity(estimateTokens(prompt))
+    } catch {
+      throw new UserFacingError('The AI service is busy right now. Please try again in a minute.')
+    }
+
     const completion = await groq.chat.completions.create({
       model: MODEL,
-      messages: [{ role: 'user', content: buildPrompt(notes, styleSample) }],
+      messages: [{ role: 'user', content: prompt }],
     })
 
     const responseText = completion.choices[0]?.message?.content ?? ''
