@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client'
 import { createClient } from '@/lib/supabase/server'
 import { generateStudyMaterials } from './actions'
 import { generateExamPaper } from './exam-actions'
+import { updateExtractedText } from './edit-text-actions'
 import AppShell from '../../components/AppShell'
 import DeleteDocumentButton from '../../components/DeleteDocumentButton'
 import QuizClient from './QuizClient'
@@ -239,6 +240,31 @@ export default async function DocumentPage({
             <QuizClient documentId={id} quiz={quiz} />
           </>
         )}
+
+        <details className="mt-10 rounded-xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
+          <summary className="cursor-pointer text-sm font-medium text-[var(--color-text)]">
+            Edit extracted text
+          </summary>
+          <p className="mt-2 text-xs text-[var(--color-muted)]">
+            Fix anything OCR got wrong. Already-generated summaries, flashcards, or quizzes won't
+            update automatically — regenerate them above after saving a fix.
+          </p>
+          <form action={updateExtractedText} className="mt-3 space-y-2">
+            <input type="hidden" name="documentId" value={id} />
+            <textarea
+              name="extractedText"
+              defaultValue={document.extractedText ?? ''}
+              rows={14}
+              className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] p-3 font-mono text-xs text-[var(--color-text)] outline-none focus:border-[var(--color-primary)]"
+            />
+            <button
+              type="submit"
+              className="rounded-full bg-[var(--color-primary)] px-4 py-1.5 text-xs font-medium text-[var(--color-bg)] hover:opacity-90"
+            >
+              Save text
+            </button>
+          </form>
+        </details>
 
         {document.kind !== 'past_paper' && (
           <div className="mt-10 border-t border-[var(--color-border)] pt-6">
